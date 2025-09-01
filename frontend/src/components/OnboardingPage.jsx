@@ -111,7 +111,6 @@ const OnboardingPage = () => {
       case 'location':
         const locationAnswer = answers[questionId] || {};
         const countries = onboardingData.countries[currentLanguage] || onboardingData.countries.es;
-        const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
         
         return (
           <div className="space-y-6">
