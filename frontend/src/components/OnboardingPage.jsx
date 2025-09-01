@@ -19,6 +19,7 @@ const OnboardingPage = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isCompleted, setIsCompleted] = useState(false);
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
 
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
