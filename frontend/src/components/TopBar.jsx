@@ -3,6 +3,8 @@ import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -10,6 +12,11 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
   ];
 
   const currentLang = languages.find(lang => lang.code === currentLanguage);
+
+  const handleLanguageChange = (langCode) => {
+    setCurrentLanguage(langCode);
+    setIsDropdownOpen(false);
+  };
 
   return (
     <div className="bg-black border-b border-white/10">
