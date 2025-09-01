@@ -342,6 +342,56 @@ export const onboardingData = {
           value: 'meat',
           label: { es: 'Carnes', en: 'Meat', pt: 'Carnes' },
           image: 'https://images.unsplash.com/photo-1677758778998-c5427bc0d33e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwc3RlYWt8ZW58MHx8fHwxNzU2NzU1NzU0fDA&ixlib=rb-4.1.0&q=85'
+        },
+        {
+          value: 'mexican',
+          label: { es: 'Mexicana', en: 'Mexican', pt: 'Mexicana' },
+          image: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'peruvian',
+          label: { es: 'Peruana', en: 'Peruvian', pt: 'Peruana' },
+          image: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'smoked',
+          label: { es: 'Ahumada', en: 'Smoked', pt: 'Defumada' },
+          image: 'https://images.unsplash.com/photo-1599458253959-5d2d95a60397?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'glutenfree',
+          label: { es: 'Sin Gluten', en: 'Gluten Free', pt: 'Sem Glúten' },
+          image: 'https://images.unsplash.com/photo-1540914124281-342587941389?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'nikkei',
+          label: { es: 'Fusión Nikkei', en: 'Nikkei Fusion', pt: 'Fusão Nikkei' },
+          image: 'https://images.unsplash.com/photo-1734988149239-85943a98833c?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'hamburgers',
+          label: { es: 'Hamburguesas', en: 'Hamburgers', pt: 'Hambúrgueres' },
+          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'fastfood',
+          label: { es: 'Fast Food', en: 'Fast Food', pt: 'Fast Food' },
+          image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'pastry',
+          label: { es: 'Repostería', en: 'Pastry', pt: 'Confeitaria' },
+          image: 'https://images.unsplash.com/photo-1695217682346-c03f0a540806?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'korean',
+          label: { es: 'Koreana', en: 'Korean', pt: 'Coreana' },
+          image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=400&fit=crop'
+        },
+        {
+          value: 'grilled',
+          label: { es: 'Parrillas', en: 'Grilled', pt: 'Grelhados' },
+          image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=400&fit=crop'
         }
       ]
     },
