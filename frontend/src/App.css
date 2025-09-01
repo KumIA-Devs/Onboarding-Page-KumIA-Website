@@ -42,9 +42,22 @@ body, html {
     background-color: #000000 !important;
 }
 
-/* Hide "Made with Emergent" badge */
+/* Hide "Made with Emergent" badge - more specific selectors */
 [data-testid="emergent-badge"],
 .emergent-badge,
-a[href*="emergent"] {
+a[href*="emergent"],
+button[title*="emergent" i],
+div[data-tooltip*="emergent" i],
+*[class*="emergent" i] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Additional badge hiding */
+body > div:last-child,
+body > div[style*="position: fixed"],
+body > div[style*="bottom"],
+body > div[style*="right"] {
     display: none !important;
 }
