@@ -186,7 +186,7 @@ const OnboardingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
       <TopBar 
         currentLanguage={currentLanguage}
         setCurrentLanguage={setCurrentLanguage}
@@ -195,12 +195,12 @@ const OnboardingPage = () => {
       
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
         {/* Left Side - Progress */}
-        <div className="lg:w-1/2 p-8 flex flex-col justify-center items-center bg-black/20">
+        <div className="lg:w-1/2 p-8 flex flex-col justify-center items-center bg-black/30">
           <div className="max-w-md w-full">
             <img 
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png"
               alt="KumIA Logo"
-              className="w-32 h-32 mx-auto mb-8"
+              className="w-24 h-24 mx-auto mb-8 object-contain"
             />
             <ProgressSteps 
               currentStep={calculatedStep}
@@ -210,17 +210,24 @@ const OnboardingPage = () => {
         </div>
 
         {/* Right Side - Questions */}
-        <div className="lg:w-1/2 p-8 flex flex-col justify-center">
-          <Card className="bg-black/30 border-white/10 backdrop-blur-sm">
+        <div className="lg:w-1/2 p-8 flex flex-col justify-center relative">
+          {/* Comet Animation */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="comet-orbit">
+              <div className="comet">
+                <div className="comet-head"></div>
+                <div className="comet-tail"></div>
+              </div>
+            </div>
+          </div>
+
+          <Card className="bg-black/40 border-white/10 backdrop-blur-sm relative z-10">
             <div className="p-8">
               <div className="mb-6">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-green-400 text-sm font-medium">
-                    {translations.question} {currentQuestion + 1} {translations.of} {totalQuestions}
-                  </span>
+                <div className="flex justify-end items-center mb-4">
                   <div className="w-32 bg-white/20 rounded-full h-2">
                     <div 
-                      className="bg-green-400 h-2 rounded-full transition-all duration-300"
+                      className="bg-green-400 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${((currentQuestion + 1) / totalQuestions) * 100}%` }}
                     ></div>
                   </div>
