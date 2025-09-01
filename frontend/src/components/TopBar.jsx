@@ -20,7 +20,8 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
             <img 
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/8zopuovo_Logo%20OFICIAL%20negro.jpg"
               alt="KumIA"
-              className="h-16 w-auto"
+              className="h-24 w-auto"
+              style={{ transform: 'scale(1.5)' }}
             />
           </div>
 
