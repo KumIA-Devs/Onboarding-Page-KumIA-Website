@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
