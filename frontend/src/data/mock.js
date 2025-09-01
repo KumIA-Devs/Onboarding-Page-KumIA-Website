@@ -8,11 +8,18 @@ export const onboardingData = {
       previous: "Anterior",
       continue: "Continuar",
       finish: "Finalizar",
+      other: "Otro",
+      specify: "Especifica:",
+      completion: {
+        title: "¡Gracias por completar tu onboarding!",
+        message: "Estamos creando tu ecosistema KumIA personalizado y tendrás acceso en breves segundos...",
+        processing: "Creando tu experiencia única..."
+      },
       steps: {
         basics: "Información Básica",
         basicsDesc: "Nombre, eslogan y especialidad",
-        operations: "Operaciones",
-        operationsDesc: "Personal, capacidad y volumen",
+        operations: "Operaciones y Ubicación",
+        operationsDesc: "Ubicación, personal y capacidad",
         feedback: "Reviews y Feedback",
         feedbackDesc: "Plataformas de evaluación",
         experience: "Experiencia del Cliente",
@@ -29,11 +36,18 @@ export const onboardingData = {
       previous: "Previous",
       continue: "Continue",
       finish: "Finish",
+      other: "Other",
+      specify: "Specify:",
+      completion: {
+        title: "Thank you for completing your onboarding!",
+        message: "We are creating your personalized KumIA ecosystem and you will have access in just a few seconds...",
+        processing: "Creating your unique experience..."
+      },
       steps: {
         basics: "Basic Information",
         basicsDesc: "Name, slogan and specialty",
-        operations: "Operations",
-        operationsDesc: "Staff, capacity and volume",
+        operations: "Operations & Location",
+        operationsDesc: "Location, staff and capacity",
         feedback: "Reviews & Feedback",
         feedbackDesc: "Review platforms",
         experience: "Customer Experience",
@@ -50,11 +64,18 @@ export const onboardingData = {
       previous: "Anterior",
       continue: "Continuar",
       finish: "Finalizar",
+      other: "Outro",
+      specify: "Especifique:",
+      completion: {
+        title: "Obrigado por completar seu onboarding!",
+        message: "Estamos criando seu ecossistema KumIA personalizado e você terá acesso em poucos segundos...",
+        processing: "Criando sua experiência única..."
+      },
       steps: {
         basics: "Informações Básicas",
         basicsDesc: "Nome, slogan e especialidade",
-        operations: "Operações",
-        operationsDesc: "Pessoal, capacidade e volume",
+        operations: "Operações e Localização",
+        operationsDesc: "Localização, pessoal e capacidade",
         feedback: "Avaliações e Feedback",
         feedbackDesc: "Plataformas de avaliação",
         experience: "Experiência do Cliente",
@@ -63,6 +84,64 @@ export const onboardingData = {
         goalsDesc: "Metas e formato do cardápio"
       }
     }
+  },
+  countries: {
+    es: [
+      { value: 'ES', label: 'España' },
+      { value: 'MX', label: 'México' },
+      { value: 'AR', label: 'Argentina' },
+      { value: 'CO', label: 'Colombia' },
+      { value: 'PE', label: 'Perú' },
+      { value: 'CL', label: 'Chile' },
+      { value: 'VE', label: 'Venezuela' },
+      { value: 'EC', label: 'Ecuador' },
+      { value: 'UY', label: 'Uruguay' },
+      { value: 'PY', label: 'Paraguay' },
+      { value: 'BO', label: 'Bolivia' },
+      { value: 'GT', label: 'Guatemala' },
+      { value: 'HN', label: 'Honduras' },
+      { value: 'SV', label: 'El Salvador' },
+      { value: 'NI', label: 'Nicaragua' },
+      { value: 'CR', label: 'Costa Rica' },
+      { value: 'PA', label: 'Panamá' },
+      { value: 'DO', label: 'República Dominicana' },
+      { value: 'CU', label: 'Cuba' },
+      { value: 'PR', label: 'Puerto Rico' }
+    ],
+    en: [
+      { value: 'US', label: 'United States' },
+      { value: 'CA', label: 'Canada' },
+      { value: 'GB', label: 'United Kingdom' },
+      { value: 'AU', label: 'Australia' },
+      { value: 'NZ', label: 'New Zealand' },
+      { value: 'IE', label: 'Ireland' },
+      { value: 'ZA', label: 'South Africa' },
+      { value: 'IN', label: 'India' },
+      { value: 'SG', label: 'Singapore' },
+      { value: 'MY', label: 'Malaysia' },
+      { value: 'PH', label: 'Philippines' },
+      { value: 'KE', label: 'Kenya' },
+      { value: 'NG', label: 'Nigeria' },
+      { value: 'GH', label: 'Ghana' },
+      { value: 'TZ', label: 'Tanzania' },
+      { value: 'UG', label: 'Uganda' },
+      { value: 'ZW', label: 'Zimbabwe' },
+      { value: 'BW', label: 'Botswana' },
+      { value: 'JM', label: 'Jamaica' },
+      { value: 'TT', label: 'Trinidad and Tobago' }
+    ],
+    pt: [
+      { value: 'BR', label: 'Brasil' },
+      { value: 'PT', label: 'Portugal' },
+      { value: 'AO', label: 'Angola' },
+      { value: 'MZ', label: 'Moçambique' },
+      { value: 'CV', label: 'Cabo Verde' },
+      { value: 'GW', label: 'Guiné-Bissau' },
+      { value: 'ST', label: 'São Tomé e Príncipe' },
+      { value: 'TL', label: 'Timor-Leste' },
+      { value: 'GQ', label: 'Guiné Equatorial' },
+      { value: 'MO', label: 'Macau' }
+    ]
   },
   questions: [
     // Información Básica (Questions 1-3)
@@ -97,56 +176,74 @@ export const onboardingData = {
     },
     {
       id: 'food_specialty',
-      type: 'checkbox',
+      type: 'card-select',
       text: {
-        es: '¿En qué tipo de comida/bebida sois especialistas?',
-        en: 'What type of food/drinks do you specialize in?',
-        pt: 'Em que tipo de comida/bebida vocês são especialistas?'
+        es: '¿En qué tipo de comida se especializa tu restaurante?',
+        en: 'What type of food does your restaurant specialize in?',
+        pt: 'Em que tipo de comida seu restaurante se especializa?'
       },
       options: [
         {
           value: 'sushi',
           label: { es: 'Sushi', en: 'Sushi', pt: 'Sushi' },
-          image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1663334038419-71e6f82e333f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxzdXNoaSUyMHBsYXR0ZXJ8ZW58MHx8fHwxNzU2NzU1NzExfDA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'sandwiches',
           label: { es: 'Sándwiches', en: 'Sandwiches', pt: 'Sanduíches' },
-          image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1563045848-170d3bb67320?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwc2FuZHdpY2h8ZW58MHx8fHwxNzU2NzU1NzE4fDA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'pizza',
           label: { es: 'Pizzas', en: 'Pizza', pt: 'Pizza' },
-          image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1676723009754-8359b42536ce?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxkZWxpY2lvdXMlMjBwaXp6YXxlbnwwfHx8fDE3NTY3NTU3MjR8MA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'desserts',
           label: { es: 'Postres', en: 'Desserts', pt: 'Sobremesas' },
-          image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1741244133042-970251e76066?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwzfHxlbGVnYW50JTIwZGVzc2VydHxlbnwwfHx8fDE3NTY3NTU3MzB8MA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'fusion',
           label: { es: 'Fusión', en: 'Fusion', pt: 'Fusão' },
-          image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1661607723272-56ed21064a48?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxmdXNpb24lMjBjdWlzaW5lfGVufDB8fHx8MTc1Njc1NTczNnww&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'homemade',
           label: { es: 'Casera', en: 'Homemade', pt: 'Caseira' },
-          image: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1605926637412-b0cd5a3e3543?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwzfHxjb21mb3J0JTIwZm9vZHxlbnwwfHx8fDE3NTY3NTU3NDJ8MA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'seafood',
-          label: { es: 'Pescado', en: 'Seafood', pt: 'Frutos do mar' },
-          image: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=100&h=100&fit=crop'
+          label: { es: 'Pescado y Mariscos', en: 'Seafood', pt: 'Frutos do mar' },
+          image: 'https://images.unsplash.com/photo-1633321094192-388268512e0f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMHNlYWZvb2R8ZW58MHx8fHwxNzU2NzU1NzQ3fDA&ixlib=rb-4.1.0&q=85'
         },
         {
           value: 'meat',
           label: { es: 'Carnes', en: 'Meat', pt: 'Carnes' },
-          image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=100&h=100&fit=crop'
+          image: 'https://images.unsplash.com/photo-1677758778998-c5427bc0d33e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwc3RlYWt8ZW58MHx8fHwxNzU2NzU1NzU0fDA&ixlib=rb-4.1.0&q=85'
         }
       ]
     },
-    // Operaciones (Questions 4-7)
+    // Operaciones (Questions 4-8) - NEW LOCATION QUESTION FIRST
+    {
+      id: 'restaurant_location',
+      type: 'location',
+      text: {
+        es: '¿Dónde se ubica tu restaurante?',
+        en: 'Where is your restaurant located?',
+        pt: 'Onde seu restaurante está localizado?'
+      }
+    },
+    {
+      id: 'branches_count',
+      type: 'number',
+      text: {
+        es: '¿Cuántas sucursales tiene tu restaurante?',
+        en: 'How many branches does your restaurant have?',
+        pt: 'Quantas filiais seu restaurante tem?'
+      }
+    },
     {
       id: 'has_staff',
       type: 'radio',
@@ -191,24 +288,44 @@ export const onboardingData = {
         pt: 'Qual é sua capacidade máxima de clientes?'
       }
     },
-    // Reviews y Feedback (Question 8)
+    // Reviews y Feedback (Question 9)
     {
       id: 'review_platforms',
-      type: 'checkbox',
+      type: 'card-select',
       text: {
         es: '¿Qué plataforma utilizas para recolectar reviews de tus clientes?',
         en: 'What platform do you use to collect customer reviews?',
         pt: 'Que plataforma você usa para coletar avaliações dos clientes?'
       },
       options: [
-        { value: 'google', label: { es: 'Google Reviews', en: 'Google Reviews', pt: 'Google Reviews' } },
-        { value: 'tripadvisor', label: { es: 'TripAdvisor', en: 'TripAdvisor', pt: 'TripAdvisor' } },
-        { value: 'trustpilot', label: { es: 'Trustpilot', en: 'Trustpilot', pt: 'Trustpilot' } },
-        { value: 'facebook', label: { es: 'Facebook', en: 'Facebook', pt: 'Facebook' } },
-        { value: 'other', label: { es: 'Otro', en: 'Other', pt: 'Outro' } }
+        { 
+          value: 'google', 
+          label: { es: 'Google Reviews', en: 'Google Reviews', pt: 'Google Reviews' },
+          logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
+        },
+        { 
+          value: 'tripadvisor', 
+          label: { es: 'TripAdvisor', en: 'TripAdvisor', pt: 'TripAdvisor' },
+          logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Tripadvisor_logo.svg'
+        },
+        { 
+          value: 'trustpilot', 
+          label: { es: 'Trustpilot', en: 'Trustpilot', pt: 'Trustpilot' },
+          logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Trustpilot_Logo.svg'
+        },
+        { 
+          value: 'facebook', 
+          label: { es: 'Facebook', en: 'Facebook', pt: 'Facebook' },
+          logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg'
+        },
+        { 
+          value: 'other', 
+          label: { es: 'Otro', en: 'Other', pt: 'Outro' },
+          showInput: true
+        }
       ]
     },
-    // Experiencia del Cliente (Questions 9-11)
+    // Experiencia del Cliente (Questions 10-12)
     {
       id: 'loyalty_system',
       type: 'radio',
@@ -218,7 +335,7 @@ export const onboardingData = {
         pt: 'Você tem um sistema de fidelização implementado?'
       },
       options: [
-        { value: 'yes', label: { es: 'Sí', en: 'Yes', pt: 'Sim' } },
+        { value: 'yes', label: { es: 'Sí', en: 'Yes', pt: 'Sim' }, showInput: true },
         { value: 'no', label: { es: 'No', en: 'No', pt: 'Não' } }
       ]
     },
@@ -231,13 +348,13 @@ export const onboardingData = {
         pt: 'Você tem um sistema de recompensas para seus clientes?'
       },
       options: [
-        { value: 'yes', label: { es: 'Sí', en: 'Yes', pt: 'Sim' } },
+        { value: 'yes', label: { es: 'Sí', en: 'Yes', pt: 'Sim' }, showInput: true },
         { value: 'no', label: { es: 'No', en: 'No', pt: 'Não' } }
       ]
     },
     {
       id: 'entertainment',
-      type: 'checkbox',
+      type: 'card-select',
       text: {
         es: 'Mientras tus clientes esperan su comida, ¿cómo mejoras su experiencia?',
         en: 'While your customers wait for their food, how do you improve their experience?',
@@ -252,10 +369,10 @@ export const onboardingData = {
         { value: 'none', label: { es: 'Sin entretenimiento', en: 'No entertainment', pt: 'Sem entretenimento' } }
       ]
     },
-    // Objetivos y Menú (Questions 12-15)
+    // Objetivos y Menú (Questions 13-16)
     {
       id: 'menu_format',
-      type: 'checkbox',
+      type: 'card-select',
       text: {
         es: '¿Qué formato de carta utilizas?',
         en: 'What menu format do you use?',
@@ -274,9 +391,9 @@ export const onboardingData = {
       max: 500,
       step: 5,
       text: {
-        es: '¿De cuánto es tu ticket promedio?',
-        en: 'What is your average ticket amount?',
-        pt: 'Qual é o valor médio do seu ticket?'
+        es: '¿De cuánto es tu ticket promedio? (valores en $ USD)',
+        en: 'What is your average ticket amount? (values in $ USD)',
+        pt: 'Qual é o valor médio do seu ticket? (valores em $ USD)'
       }
     },
     {
@@ -290,7 +407,7 @@ export const onboardingData = {
     },
     {
       id: 'business_goals',
-      type: 'checkbox',
+      type: 'card-select',
       text: {
         es: '¿Cuál es tu meta principal?',
         en: 'What is your main goal?',
@@ -303,7 +420,7 @@ export const onboardingData = {
         { value: 'capacity', label: { es: 'Operar a capacidad máxima', en: 'Operate at maximum capacity', pt: 'Operar na capacidade máxima' } },
         { value: 'expand', label: { es: 'Abrir otra sucursal', en: 'Open another location', pt: 'Abrir outra filial' } },
         { value: 'enlarge', label: { es: 'Ampliar el restaurant', en: 'Expand the restaurant', pt: 'Ampliar o restaurante' } },
-        { value: 'other', label: { es: 'Otro', en: 'Other', pt: 'Outro' } }
+        { value: 'other', label: { es: 'Otro', en: 'Other', pt: 'Outro' }, showInput: true }
       ]
     }
   ]

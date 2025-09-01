@@ -20,7 +20,7 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
             <img 
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/8zopuovo_Logo%20OFICIAL%20negro.jpg"
               alt="KumIA"
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </div>
 
@@ -37,21 +37,24 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="text-white hover:bg-white/10 flex items-center space-x-2"
+                  className="text-white hover:bg-white/10 flex items-center space-x-2 h-12 px-4"
                 >
-                  <span className="text-xl">{currentLang.flag}</span>
-                  <span className="hidden sm:inline">{currentLang.name}</span>
+                  <span className="text-2xl">{currentLang.flag}</span>
+                  <span className="hidden sm:inline text-lg">{currentLang.name}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-black/90 border-white/20 backdrop-blur-sm">
+              <DropdownMenuContent 
+                className="bg-black/90 border-white/20 backdrop-blur-sm min-w-[150px]"
+                align="end"
+              >
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
                     onClick={() => setCurrentLanguage(lang.code)}
-                    className="text-white hover:bg-white/10 cursor-pointer"
+                    className="text-white hover:bg-white/10 cursor-pointer flex items-center space-x-3 px-4 py-2"
                   >
-                    <span className="mr-2">{lang.flag}</span>
-                    {lang.name}
+                    <span className="text-xl">{lang.flag}</span>
+                    <span className="text-base">{lang.name}</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

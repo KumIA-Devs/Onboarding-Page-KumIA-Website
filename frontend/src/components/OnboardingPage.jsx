@@ -6,10 +6,11 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Checkbox } from './ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Slider } from './ui/slider';
 import TopBar from './TopBar';
 import ProgressSteps from './ProgressSteps';
+import CompletionPage from './CompletionPage';
 import { onboardingData } from '../data/mock';
 
 const OnboardingPage = () => {
@@ -17,6 +18,7 @@ const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
@@ -36,6 +38,9 @@ const OnboardingPage = () => {
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(prev => prev + 1);
+    } else {
+      // Last question - show completion page
+      setIsCompleted(true);
     }
   };
 
@@ -58,9 +63,14 @@ const OnboardingPage = () => {
     if (typeof answer === 'string' && answer.trim() === '') return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
     
-    // For number questions, allow 0 as valid answer, except for slider questions
+    // For number questions, require value > 0
     if (currentQuestionObj.type === 'number' && (answer === 0 || answer === '')) return false;
     if (currentQuestionObj.type === 'slider' && answer === currentQuestionObj.min) return true; // Slider always has a value
+    
+    // For location type, check if all required fields are filled
+    if (currentQuestionObj.type === 'location') {
+      return answer && answer.country && answer.city;
+    }
     
     return true;
   };
@@ -97,67 +107,163 @@ const OnboardingPage = () => {
           </div>
         );
 
+      case 'location':
+        const locationAnswer = answers[questionId] || {};
+        const countries = onboardingData.countries[currentLanguage] || onboardingData.countries.es;
+        
+        return (
+          <div className="space-y-6">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm text-white/80 mb-2 block">
+                  {currentLanguage === 'es' ? 'País' : currentLanguage === 'en' ? 'Country' : 'País'}
+                </Label>
+                <Select 
+                  value={locationAnswer.country || ''} 
+                  onValueChange={(value) => handleAnswer(questionId, {...locationAnswer, country: value})}
+                >
+                  <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                    <SelectValue placeholder={currentLanguage === 'es' ? 'Selecciona país' : currentLanguage === 'en' ? 'Select country' : 'Selecione país'} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/90 border-white/20 backdrop-blur-sm">
+                    {countries.map((country) => (
+                      <SelectItem key={country.value} value={country.value} className="text-white hover:bg-white/10">
+                        {country.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm text-white/80 mb-2 block">
+                  {currentLanguage === 'es' ? 'Estado/Región' : currentLanguage === 'en' ? 'State/Region' : 'Estado/Região'}
+                </Label>
+                <Input
+                  value={locationAnswer.state || ''}
+                  onChange={(e) => handleAnswer(questionId, {...locationAnswer, state: e.target.value})}
+                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                  placeholder={currentLanguage === 'es' ? 'Estado o región' : currentLanguage === 'en' ? 'State or region' : 'Estado ou região'}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="text-sm text-white/80 mb-2 block">
+                  {currentLanguage === 'es' ? 'Ciudad/Localidad' : currentLanguage === 'en' ? 'City/Locality' : 'Cidade/Localidade'}
+                </Label>
+                <Input
+                  value={locationAnswer.city || ''}
+                  onChange={(e) => handleAnswer(questionId, {...locationAnswer, city: e.target.value})}
+                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                  placeholder={currentLanguage === 'es' ? 'Ciudad o localidad' : currentLanguage === 'en' ? 'City or locality' : 'Cidade ou localidade'}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
       case 'radio':
+        const hasInputOption = question.options.some(opt => opt.showInput);
+        const selectedRadioValue = answers[questionId] || '';
+        const selectedOption = question.options.find(opt => opt.value === selectedRadioValue);
+        
         return (
           <div className="space-y-8">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
             <RadioGroup
-              value={answers[questionId] || ''}
+              value={selectedRadioValue}
               onValueChange={(value) => handleAnswer(questionId, value)}
               className="space-y-4"
             >
               {question.options.map((option, index) => (
-                <div key={index} className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg border border-white/20 hover:bg-white/15 transition-colors">
-                  <RadioGroupItem value={option.value} id={`${questionId}-${index}`} className="border-green-400 text-green-400" />
-                  <Label 
-                    htmlFor={`${questionId}-${index}`}
-                    className="text-white cursor-pointer text-lg flex-1"
-                  >
-                    {option.label[currentLanguage]}
-                  </Label>
+                <div key={index} className="space-y-3">
+                  <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg border border-white/20 hover:bg-white/15 transition-colors">
+                    <RadioGroupItem value={option.value} id={`${questionId}-${index}`} className="border-green-400 text-green-400" />
+                    <Label 
+                      htmlFor={`${questionId}-${index}`}
+                      className="text-white cursor-pointer text-lg flex-1"
+                    >
+                      {option.label[currentLanguage]}
+                    </Label>
+                  </div>
+                  {option.showInput && selectedRadioValue === option.value && (
+                    <Input
+                      value={answers[`${questionId}_specify`] || ''}
+                      onChange={(e) => handleAnswer(`${questionId}_specify`, e.target.value)}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/60 ml-8"
+                      placeholder={`${translations.specify} ${option.label[currentLanguage].toLowerCase()}`}
+                    />
+                  )}
                 </div>
               ))}
             </RadioGroup>
           </div>
         );
 
-      case 'checkbox':
+      case 'card-select':
+        const cardAnswers = answers[questionId] || [];
+        
         return (
           <div className="space-y-8">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {question.options.map((option, index) => (
-                <div key={index} className="flex items-center space-x-4 bg-white/10 p-6 rounded-lg border border-white/20 hover:bg-white/15 transition-colors min-h-[120px]">
-                  <Checkbox
-                    id={`${questionId}-${index}`}
-                    checked={(answers[questionId] || []).includes(option.value)}
-                    onCheckedChange={(checked) => {
-                      const current = answers[questionId] || [];
-                      if (checked) {
-                        handleAnswer(questionId, [...current, option.value]);
-                      } else {
-                        handleAnswer(questionId, current.filter(v => v !== option.value));
-                      }
-                    }}
-                    className="border-green-400 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 w-5 h-5"
-                  />
-                  <div className="flex-1">
-                    {option.image && (
-                      <img 
-                        src={option.image} 
-                        alt={option.label[currentLanguage]}
-                        className="w-16 h-16 object-cover rounded mb-3"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {question.options.map((option, index) => {
+                const isSelected = cardAnswers.includes(option.value);
+                
+                return (
+                  <div key={index} className="space-y-3">
+                    <Card 
+                      className={`
+                        cursor-pointer transition-all duration-300 p-6 border-2 hover:scale-105
+                        ${isSelected 
+                          ? 'bg-green-500/20 border-green-400' 
+                          : 'bg-white/10 border-white/20 hover:bg-white/15'
+                        }
+                      `}
+                      onClick={() => {
+                        const newAnswers = isSelected 
+                          ? cardAnswers.filter(v => v !== option.value)
+                          : [...cardAnswers, option.value];
+                        handleAnswer(questionId, newAnswers);
+                      }}
+                    >
+                      <div className="text-center space-y-4">
+                        {option.image && (
+                          <img 
+                            src={option.image} 
+                            alt={option.label[currentLanguage]}
+                            className="w-20 h-20 object-cover rounded-lg mx-auto"
+                          />
+                        )}
+                        {option.logo && (
+                          <img 
+                            src={option.logo} 
+                            alt={option.label[currentLanguage]}
+                            className="w-16 h-16 object-contain mx-auto"
+                          />
+                        )}
+                        <Label className="text-white text-lg font-medium cursor-pointer">
+                          {option.label[currentLanguage]}
+                        </Label>
+                        {isSelected && (
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mx-auto">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                    {option.showInput && isSelected && (
+                      <Input
+                        value={answers[`${questionId}_other`] || ''}
+                        onChange={(e) => handleAnswer(`${questionId}_other`, e.target.value)}
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                        placeholder={`${translations.specify} ${option.label[currentLanguage].toLowerCase()}`}
                       />
                     )}
-                    <Label 
-                      htmlFor={`${questionId}-${index}`}
-                      className="text-white cursor-pointer text-lg"
-                    >
-                      {option.label[currentLanguage]}
-                    </Label>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         );
@@ -205,6 +311,10 @@ const OnboardingPage = () => {
         return null;
     }
   };
+
+  if (isCompleted) {
+    return <CompletionPage currentLanguage={currentLanguage} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
@@ -265,7 +375,7 @@ const OnboardingPage = () => {
 
                 <Button
                   onClick={handleNext}
-                  disabled={currentQuestion === totalQuestions - 1 || !isCurrentQuestionAnswered()}
+                  disabled={!isCurrentQuestionAnswered()}
                   className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {currentQuestion === totalQuestions - 1 ? translations.finish : translations.continue}
