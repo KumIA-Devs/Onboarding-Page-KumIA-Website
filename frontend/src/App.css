@@ -33,61 +33,18 @@
     }
 }
 
-/* Comet Animation */
-.comet-orbit {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    animation: orbit 15s linear infinite;
+/* Remove any white backgrounds */
+body, html {
+    background-color: #000000 !important;
 }
 
-.comet {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 8px;
+.App {
+    background-color: #000000 !important;
 }
 
-.comet-head {
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, #84cc16, #65a30d);
-    border-radius: 50%;
-    box-shadow: 0 0 12px #84cc16, 0 0 24px #84cc16;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-.comet-tail {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 2px;
-    height: 20px;
-    background: linear-gradient(to bottom, rgba(132, 204, 22, 0.8), transparent);
-    transform: translate(-50%, -50%) rotate(180deg);
-    border-radius: 2px;
-}
-
-@keyframes orbit {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-@keyframes glow {
-    from {
-        box-shadow: 0 0 12px #84cc16, 0 0 24px #84cc16;
-    }
-    to {
-        box-shadow: 0 0 16px #84cc16, 0 0 32px #84cc16, 0 0 48px #84cc16;
-    }
+/* Hide "Made with Emergent" badge */
+[data-testid="emergent-badge"],
+.emergent-badge,
+a[href*="emergent"] {
+    display: none !important;
 }

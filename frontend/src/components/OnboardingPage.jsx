@@ -45,6 +45,19 @@ const OnboardingPage = () => {
     }
   };
 
+  // Validate if current question is answered
+  const isCurrentQuestionAnswered = () => {
+    const currentQuestionId = questions[currentQuestion].id;
+    const answer = answers[currentQuestionId];
+    
+    if (answer === undefined || answer === null) return false;
+    if (typeof answer === 'string' && answer.trim() === '') return false;
+    if (Array.isArray(answer) && answer.length === 0) return false;
+    if (typeof answer === 'number' && answer === 0) return false;
+    
+    return true;
+  };
+
   const renderQuestion = () => {
     const question = questions[currentQuestion];
     const questionText = question.text[currentLanguage];
@@ -53,12 +66,12 @@ const OnboardingPage = () => {
     switch (question.type) {
       case 'text':
         return (
-          <div className="space-y-4">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
+          <div className="space-y-6">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
             <Input
               value={answers[questionId] || ''}
               onChange={(e) => handleAnswer(questionId, e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              className="bg-white/10 border-white/30 text-white placeholder:text-white/60 h-12 text-lg"
               placeholder={question.placeholder?.[currentLanguage] || ''}
             />
           </div>
@@ -66,12 +79,12 @@ const OnboardingPage = () => {
 
       case 'textarea':
         return (
-          <div className="space-y-4">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
+          <div className="space-y-6">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
             <Textarea
               value={answers[questionId] || ''}
               onChange={(e) => handleAnswer(questionId, e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              className="bg-white/10 border-white/30 text-white placeholder:text-white/60 min-h-[100px] text-lg"
               placeholder={question.placeholder?.[currentLanguage] || ''}
             />
           </div>
@@ -79,19 +92,19 @@ const OnboardingPage = () => {
 
       case 'radio':
         return (
-          <div className="space-y-6">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
+          <div className="space-y-8">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
             <RadioGroup
               value={answers[questionId] || ''}
               onValueChange={(value) => handleAnswer(questionId, value)}
-              className="space-y-3"
+              className="space-y-4"
             >
               {question.options.map((option, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <RadioGroupItem value={option.value} id={`${questionId}-${index}`} />
+                <div key={index} className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg border border-white/20 hover:bg-white/15 transition-colors">
+                  <RadioGroupItem value={option.value} id={`${questionId}-${index}`} className="border-green-400 text-green-400" />
                   <Label 
                     htmlFor={`${questionId}-${index}`}
-                    className="text-white cursor-pointer"
+                    className="text-white cursor-pointer text-lg flex-1"
                   >
                     {option.label[currentLanguage]}
                   </Label>
@@ -103,11 +116,11 @@ const OnboardingPage = () => {
 
       case 'checkbox':
         return (
-          <div className="space-y-6">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="space-y-8">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {question.options.map((option, index) => (
-                <div key={index} className="flex items-center space-x-3 bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <div key={index} className="flex items-center space-x-4 bg-white/10 p-6 rounded-lg border border-white/20 hover:bg-white/15 transition-colors min-h-[120px]">
                   <Checkbox
                     id={`${questionId}-${index}`}
                     checked={(answers[questionId] || []).includes(option.value)}
@@ -119,18 +132,19 @@ const OnboardingPage = () => {
                         handleAnswer(questionId, current.filter(v => v !== option.value));
                       }
                     }}
+                    className="border-green-400 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 w-5 h-5"
                   />
                   <div className="flex-1">
                     {option.image && (
                       <img 
                         src={option.image} 
                         alt={option.label[currentLanguage]}
-                        className="w-12 h-12 object-cover rounded mb-2"
+                        className="w-16 h-16 object-cover rounded mb-3"
                       />
                     )}
                     <Label 
                       htmlFor={`${questionId}-${index}`}
-                      className="text-white cursor-pointer text-sm"
+                      className="text-white cursor-pointer text-lg"
                     >
                       {option.label[currentLanguage]}
                     </Label>
@@ -143,9 +157,9 @@ const OnboardingPage = () => {
 
       case 'slider':
         return (
-          <div className="space-y-6">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
-            <div className="space-y-4">
+          <div className="space-y-8">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
+            <div className="space-y-6">
               <Slider
                 value={[answers[questionId] || question.min]}
                 onValueChange={(value) => handleAnswer(questionId, value[0])}
@@ -154,9 +168,9 @@ const OnboardingPage = () => {
                 step={question.step}
                 className="w-full"
               />
-              <div className="flex justify-between text-white/70 text-sm">
+              <div className="flex justify-between text-white/70 text-lg">
                 <span>${question.min}</span>
-                <span className="text-green-400 font-semibold">
+                <span className="text-green-400 font-semibold text-xl">
                   ${answers[questionId] || question.min}
                 </span>
                 <span>${question.max}</span>
@@ -167,13 +181,13 @@ const OnboardingPage = () => {
 
       case 'number':
         return (
-          <div className="space-y-4">
-            <Label className="text-lg font-medium text-white">{questionText}</Label>
+          <div className="space-y-6">
+            <Label className="text-xl font-medium text-white">{questionText}</Label>
             <Input
               type="number"
               value={answers[questionId] || ''}
               onChange={(e) => handleAnswer(questionId, parseInt(e.target.value) || 0)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              className="bg-white/10 border-white/30 text-white placeholder:text-white/60 h-12 text-lg"
               placeholder="0"
               min="0"
             />
@@ -195,7 +209,7 @@ const OnboardingPage = () => {
       
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
         {/* Left Side - Progress */}
-        <div className="lg:w-1/2 p-8 flex flex-col justify-center items-center bg-black/30">
+        <div className="lg:w-1/2 p-8 flex flex-col justify-center items-center bg-black/40">
           <div className="max-w-md w-full">
             <img 
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png"
@@ -210,31 +224,24 @@ const OnboardingPage = () => {
         </div>
 
         {/* Right Side - Questions */}
-        <div className="lg:w-1/2 p-8 flex flex-col justify-center relative">
-          {/* Comet Animation */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="comet-orbit">
-              <div className="comet">
-                <div className="comet-head"></div>
-                <div className="comet-tail"></div>
-              </div>
-            </div>
-          </div>
-
-          <Card className="bg-black/40 border-white/10 backdrop-blur-sm relative z-10">
+        <div className="lg:w-1/2 p-8 flex flex-col justify-center bg-gradient-to-br from-black via-gray-900 to-gray-800 relative">
+          {/* Green Border Frame */}
+          <div className="absolute inset-4 border-2 border-green-400 rounded-lg pointer-events-none opacity-60"></div>
+          
+          <Card className="bg-black/60 border-white/10 backdrop-blur-sm relative z-10">
             <div className="p-8">
-              <div className="mb-6">
-                <div className="flex justify-end items-center mb-4">
-                  <div className="w-32 bg-white/20 rounded-full h-2">
+              <div className="mb-8">
+                <div className="flex justify-end items-center mb-6">
+                  <div className="w-48 bg-white/20 rounded-full h-3">
                     <div 
-                      className="bg-green-400 h-2 rounded-full transition-all duration-500"
+                      className="bg-green-400 h-3 rounded-full transition-all duration-500"
                       style={{ width: `${((currentQuestion + 1) / totalQuestions) * 100}%` }}
                     ></div>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-8">
+              <div className="mb-10">
                 {renderQuestion()}
               </div>
 
@@ -243,7 +250,7 @@ const OnboardingPage = () => {
                   onClick={handlePrevious}
                   disabled={currentQuestion === 0}
                   variant="outline"
-                  className="bg-transparent border-white/20 text-white hover:bg-white/10"
+                  className="bg-transparent border-white/30 text-white hover:bg-white/10 px-6 py-3"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   {translations.previous}
@@ -251,8 +258,8 @@ const OnboardingPage = () => {
 
                 <Button
                   onClick={handleNext}
-                  disabled={currentQuestion === totalQuestions - 1}
-                  className="bg-green-500 hover:bg-green-600 text-white"
+                  disabled={currentQuestion === totalQuestions - 1 || !isCurrentQuestionAnswered()}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {currentQuestion === totalQuestions - 1 ? translations.finish : translations.continue}
                   {currentQuestion !== totalQuestions - 1 && <ChevronRight className="w-4 h-4 ml-2" />}
