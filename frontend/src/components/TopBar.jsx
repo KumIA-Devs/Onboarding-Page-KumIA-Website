@@ -36,23 +36,25 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
           <div className="flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="text-white hover:bg-white/10 flex items-center space-x-2 h-12 px-4"
+                <button 
+                  className="text-white hover:bg-white/10 flex items-center space-x-3 h-12 px-4 rounded-md transition-colors"
                 >
-                  <span className="text-2xl">{currentLang.flag}</span>
-                  <span className="hidden sm:inline text-lg">{currentLang.name}</span>
-                </Button>
+                  <span className="text-2xl">{currentLang?.flag || '🇪🇸'}</span>
+                  <span className="hidden sm:inline text-lg">{currentLang?.name || 'Español'}</span>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
-                className="bg-black/90 border-white/20 backdrop-blur-sm min-w-[150px]"
+                className="bg-black/90 border-white/20 backdrop-blur-sm min-w-[150px] z-50"
                 align="end"
+                sideOffset={5}
               >
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
-                    onClick={() => setCurrentLanguage(lang.code)}
-                    className="text-white hover:bg-white/10 cursor-pointer flex items-center space-x-3 px-4 py-2"
+                    onSelect={() => {
+                      setCurrentLanguage(lang.code);
+                    }}
+                    className="text-white hover:bg-white/10 focus:bg-white/10 cursor-pointer flex items-center space-x-3 px-4 py-2"
                   >
                     <span className="text-xl">{lang.flag}</span>
                     <span className="text-base">{lang.name}</span>
