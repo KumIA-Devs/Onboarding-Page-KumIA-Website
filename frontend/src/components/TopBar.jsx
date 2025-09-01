@@ -39,35 +39,32 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
           </div>
 
           {/* Language Selector */}
-          <div className="flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button 
-                  className="text-white hover:bg-white/10 flex items-center space-x-3 h-12 px-4 rounded-md transition-colors"
-                >
-                  <span className="text-2xl">{currentLang?.flag || '🇪🇸'}</span>
-                  <span className="hidden sm:inline text-lg">{currentLang?.name || 'Español'}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                className="bg-black/90 border-white/20 backdrop-blur-sm min-w-[150px] z-50"
-                align="end"
-                sideOffset={5}
-              >
+          <div className="flex items-center relative">
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="text-white hover:bg-white/10 flex items-center space-x-3 h-12 px-4 rounded-md transition-colors"
+            >
+              <span className="text-2xl">{currentLang?.flag || '🇪🇸'}</span>
+              <span className="hidden sm:inline text-lg">{currentLang?.name || 'Español'}</span>
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-black/90 border border-white/20 backdrop-blur-sm min-w-[150px] rounded-md shadow-lg z-50">
                 {languages.map((lang) => (
-                  <DropdownMenuItem
+                  <button
                     key={lang.code}
-                    onSelect={() => {
-                      setCurrentLanguage(lang.code);
-                    }}
-                    className="text-white hover:bg-white/10 focus:bg-white/10 cursor-pointer flex items-center space-x-3 px-4 py-2"
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className="w-full text-white hover:bg-white/10 focus:bg-white/10 cursor-pointer flex items-center space-x-3 px-4 py-3 text-left"
                   >
                     <span className="text-xl">{lang.flag}</span>
                     <span className="text-base">{lang.name}</span>
-                  </DropdownMenuItem>
+                  </button>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+            )}
           </div>
         </div>
       </div>
