@@ -47,17 +47,20 @@ const OnboardingPage = () => {
 
   // Validate if current question is answered
   const isCurrentQuestionAnswered = () => {
-    const currentQuestionId = questions[currentQuestion].id;
+    const currentQuestionObj = questions[currentQuestion];
+    const currentQuestionId = currentQuestionObj.id;
     const answer = answers[currentQuestionId];
-    const question = questions[currentQuestion];
+    
+    // If question is optional, always allow to continue
+    if (currentQuestionObj.optional) return true;
     
     if (answer === undefined || answer === null) return false;
     if (typeof answer === 'string' && answer.trim() === '') return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
     
     // For number questions, allow 0 as valid answer, except for slider questions
-    if (question.type === 'number' && (answer === 0 || answer === '')) return false;
-    if (question.type === 'slider' && answer === question.min) return true; // Slider always has a value
+    if (currentQuestionObj.type === 'number' && (answer === 0 || answer === '')) return false;
+    if (currentQuestionObj.type === 'slider' && answer === currentQuestionObj.min) return true; // Slider always has a value
     
     return true;
   };
