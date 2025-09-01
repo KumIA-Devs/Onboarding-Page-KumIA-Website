@@ -83,6 +83,7 @@ export const onboardingData = {
     {
       id: 'restaurant_slogan',
       type: 'textarea',
+      optional: true,
       text: {
         es: '¿Tienes un eslogan para tu restaurante? (opcional)',
         en: 'Do you have a slogan for your restaurant? (optional)',
