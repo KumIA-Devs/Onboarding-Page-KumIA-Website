@@ -25,7 +25,7 @@ const TopBar = ({ currentLanguage, setCurrentLanguage, translations }) => {
             <img 
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/8zopuovo_Logo%20OFICIAL%20negro.jpg"
               alt="KumIA"
-              className="h-12 w-auto"
+              className="h-14 w-auto"
             />
           </div>
 
