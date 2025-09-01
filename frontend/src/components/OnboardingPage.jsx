@@ -110,30 +110,47 @@ const OnboardingPage = () => {
       case 'location':
         const locationAnswer = answers[questionId] || {};
         const countries = onboardingData.countries[currentLanguage] || onboardingData.countries.es;
+        const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
         
         return (
           <div className="space-y-6">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="relative">
                 <Label className="text-sm text-white/80 mb-2 block">
                   {currentLanguage === 'es' ? 'País' : currentLanguage === 'en' ? 'Country' : 'País'}
                 </Label>
-                <Select 
-                  value={locationAnswer.country || ''} 
-                  onValueChange={(value) => handleAnswer(questionId, {...locationAnswer, country: value})}
+                <button
+                  onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                  className="w-full bg-white/10 border border-white/30 text-white h-10 px-3 py-2 text-sm rounded-md flex items-center justify-between"
                 >
-                  <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                    <SelectValue placeholder={currentLanguage === 'es' ? 'Selecciona país' : currentLanguage === 'en' ? 'Select country' : 'Selecione país'} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/90 border-white/20 backdrop-blur-sm">
+                  <span>
+                    {locationAnswer.country 
+                      ? countries.find(c => c.value === locationAnswer.country)?.label 
+                      : (currentLanguage === 'es' ? 'Selecciona país' : currentLanguage === 'en' ? 'Select country' : 'Selecione país')
+                    }
+                  </span>
+                  <svg className="h-4 w-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {countryDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 border border-white/20 backdrop-blur-sm rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
                     {countries.map((country) => (
-                      <SelectItem key={country.value} value={country.value} className="text-white hover:bg-white/10">
+                      <button
+                        key={country.value}
+                        onClick={() => {
+                          handleAnswer(questionId, {...locationAnswer, country: country.value});
+                          setCountryDropdownOpen(false);
+                        }}
+                        className="w-full text-white hover:bg-white/10 px-3 py-2 text-left text-sm"
+                      >
                         {country.label}
-                      </SelectItem>
+                      </button>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
               </div>
               <div>
                 <Label className="text-sm text-white/80 mb-2 block">
