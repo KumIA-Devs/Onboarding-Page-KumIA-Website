@@ -471,7 +471,7 @@ export const onboardingData = {
         { 
           value: 'google', 
           label: { es: 'Google Reviews', en: 'Google Reviews', pt: 'Google Reviews' },
-          logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
+          logo: 'https://toppng.com/uploads/preview/oogle-review-logo-png-google-reviews-transparent-1156292055272f0fh5jor.png'
         },
         { 
           value: 'tripadvisor', 
