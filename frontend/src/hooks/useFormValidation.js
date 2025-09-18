@@ -62,7 +62,7 @@ const useFormValidation = (initialValues, requiredFields = []) => {
       ...fieldErrors,
       [name]: fieldErrors[name] || undefined
     }));
-  }, [values.password, requi redFields]);
+  }, [values.password, requiredFields]);
 
   // Validate all fields
   const validateAll = useCallback(() => {
