@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { Button } from './ui/button';
+import { ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import Button from './ui/Button';
+import Input from './ui/Input';
 import { Card } from './ui/card';
-import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -14,6 +16,9 @@ import CompletionPage from './CompletionPage';
 import { onboardingData } from '../data/mock';
 
 const OnboardingPage = () => {
+  const navigate = useNavigate();
+  const { logout, clearNewUserFlag } = useAuth();
+
   const [currentLanguage, setCurrentLanguage] = useState('es');
   const [currentStep, setCurrentStep] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -24,7 +29,7 @@ const OnboardingPage = () => {
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
   const totalQuestions = questions.length;
-  
+
   // Calculate current step based on question
   const questionsPerStep = Math.ceil(totalQuestions / 5);
   const calculatedStep = Math.floor(currentQuestion / questionsPerStep);
@@ -40,7 +45,8 @@ const OnboardingPage = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      // Last question - show completion page
+      // Last question - complete onboarding and redirect to dashboard
+      clearNewUserFlag(); // Clear the new user flag
       setIsCompleted(true);
     }
   };
@@ -51,28 +57,39 @@ const OnboardingPage = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const result = await logout();
+      if (result.success) {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
   // Validate if current question is answered
   const isCurrentQuestionAnswered = () => {
     const currentQuestionObj = questions[currentQuestion];
     const currentQuestionId = currentQuestionObj.id;
     const answer = answers[currentQuestionId];
-    
+
     // If question is optional, always allow to continue
     if (currentQuestionObj.optional) return true;
-    
+
     if (answer === undefined || answer === null) return false;
     if (typeof answer === 'string' && answer.trim() === '') return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
-    
+
     // For number questions, require value > 0
     if (currentQuestionObj.type === 'number' && (answer === 0 || answer === '')) return false;
     if (currentQuestionObj.type === 'slider' && answer === currentQuestionObj.min) return true; // Slider always has a value
-    
+
     // For location type, check if all required fields are filled
     if (currentQuestionObj.type === 'location') {
       return answer && answer.country && answer.city;
     }
-    
+
     return true;
   };
 
@@ -111,7 +128,7 @@ const OnboardingPage = () => {
       case 'location':
         const locationAnswer = answers[questionId] || {};
         const countries = onboardingData.countries[currentLanguage] || onboardingData.countries.es;
-        
+
         return (
           <div className="space-y-6">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
@@ -125,8 +142,8 @@ const OnboardingPage = () => {
                   className="w-full bg-white/10 border border-white/30 text-white h-10 px-3 py-2 text-sm rounded-md flex items-center justify-between"
                 >
                   <span>
-                    {locationAnswer.country 
-                      ? countries.find(c => c.value === locationAnswer.country)?.label 
+                    {locationAnswer.country
+                      ? countries.find(c => c.value === locationAnswer.country)?.label
                       : (currentLanguage === 'es' ? 'Selecciona país' : currentLanguage === 'en' ? 'Select country' : 'Selecione país')
                     }
                   </span>
@@ -134,14 +151,14 @@ const OnboardingPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 {countryDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 border border-white/20 backdrop-blur-sm rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
                     {countries.map((country) => (
                       <button
                         key={country.value}
                         onClick={() => {
-                          handleAnswer(questionId, {...locationAnswer, country: country.value});
+                          handleAnswer(questionId, { ...locationAnswer, country: country.value });
                           setCountryDropdownOpen(false);
                         }}
                         className="w-full text-white hover:bg-white/10 px-3 py-2 text-left text-sm"
@@ -158,7 +175,7 @@ const OnboardingPage = () => {
                 </Label>
                 <Input
                   value={locationAnswer.state || ''}
-                  onChange={(e) => handleAnswer(questionId, {...locationAnswer, state: e.target.value})}
+                  onChange={(e) => handleAnswer(questionId, { ...locationAnswer, state: e.target.value })}
                   className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
                   placeholder={currentLanguage === 'es' ? 'Estado o región' : currentLanguage === 'en' ? 'State or region' : 'Estado ou região'}
                 />
@@ -169,7 +186,7 @@ const OnboardingPage = () => {
                 </Label>
                 <Input
                   value={locationAnswer.city || ''}
-                  onChange={(e) => handleAnswer(questionId, {...locationAnswer, city: e.target.value})}
+                  onChange={(e) => handleAnswer(questionId, { ...locationAnswer, city: e.target.value })}
                   className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
                   placeholder={currentLanguage === 'es' ? 'Ciudad o localidad' : currentLanguage === 'en' ? 'City or locality' : 'Cidade ou localidade'}
                 />
@@ -182,7 +199,7 @@ const OnboardingPage = () => {
         const hasInputOption = question.options.some(opt => opt.showInput);
         const selectedRadioValue = answers[questionId] || '';
         const selectedOption = question.options.find(opt => opt.value === selectedRadioValue);
-        
+
         return (
           <div className="space-y-8">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
@@ -195,7 +212,7 @@ const OnboardingPage = () => {
                 <div key={index} className="space-y-3">
                   <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg border border-white/20 hover:bg-white/15 transition-colors">
                     <RadioGroupItem value={option.value} id={`${questionId}-${index}`} className="border-green-400 text-green-400" />
-                    <Label 
+                    <Label
                       htmlFor={`${questionId}-${index}`}
                       className="text-white cursor-pointer text-lg flex-1"
                     >
@@ -218,26 +235,26 @@ const OnboardingPage = () => {
 
       case 'card-select':
         const cardAnswers = answers[questionId] || [];
-        
+
         return (
           <div className="space-y-8">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {question.options.map((option, index) => {
                 const isSelected = cardAnswers.includes(option.value);
-                
+
                 return (
                   <div key={index} className="space-y-3">
-                    <Card 
+                    <Card
                       className={`
                         cursor-pointer transition-all duration-300 p-6 border-2 hover:scale-105
-                        ${isSelected 
-                          ? 'bg-green-500/20 border-green-400' 
+                        ${isSelected
+                          ? 'bg-green-500/20 border-green-400'
                           : 'bg-white/10 border-white/20 hover:bg-white/15'
                         }
                       `}
                       onClick={() => {
-                        const newAnswers = isSelected 
+                        const newAnswers = isSelected
                           ? cardAnswers.filter(v => v !== option.value)
                           : [...cardAnswers, option.value];
                         handleAnswer(questionId, newAnswers);
@@ -245,15 +262,15 @@ const OnboardingPage = () => {
                     >
                       <div className="text-center space-y-4">
                         {option.image && (
-                          <img 
-                            src={option.image} 
+                          <img
+                            src={option.image}
                             alt={option.label[currentLanguage]}
                             className="w-20 h-20 object-cover rounded-lg mx-auto"
                           />
                         )}
                         {option.logo && (
-                          <img 
-                            src={option.logo} 
+                          <img
+                            src={option.logo}
                             alt={option.label[currentLanguage]}
                             className="w-16 h-16 object-contain mx-auto"
                           />
@@ -329,28 +346,42 @@ const OnboardingPage = () => {
     }
   };
 
+  // Handle completion and redirect to dashboard
+  const handleOnboardingComplete = () => {
+    navigate('/dashboard');
+  };
+
   if (isCompleted) {
-    return <CompletionPage currentLanguage={currentLanguage} />;
+    return <CompletionPage currentLanguage={currentLanguage} onComplete={handleOnboardingComplete} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
-      <TopBar 
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 relative">
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="absolute top-6 right-6 z-50 flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl transition-colors duration-300 shadow-lg"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden sm:inline">Cerrar Sesión</span>
+      </button>
+
+      <TopBar
         currentLanguage={currentLanguage}
         setCurrentLanguage={setCurrentLanguage}
         translations={translations}
       />
-      
+
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
         {/* Left Side - Progress */}
         <div className="lg:w-1/2 p-8 flex flex-col justify-center items-center bg-black/40">
           <div className="max-w-md w-full">
-            <img 
+            <img
               src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png"
               alt="KumIA Logo"
               className="w-24 h-24 mx-auto mb-8 object-contain"
             />
-            <ProgressSteps 
+            <ProgressSteps
               currentStep={calculatedStep}
               translations={translations}
             />
@@ -361,13 +392,13 @@ const OnboardingPage = () => {
         <div className="lg:w-1/2 p-8 flex flex-col justify-center bg-gradient-to-br from-black via-gray-900 to-gray-800 relative">
           {/* Green Border Frame */}
           <div className="absolute inset-4 border-2 border-green-400 rounded-lg pointer-events-none opacity-60"></div>
-          
+
           <Card className="bg-black/60 border-white/10 backdrop-blur-sm relative z-10">
             <div className="p-8">
               <div className="mb-8">
                 <div className="flex justify-end items-center mb-6">
                   <div className="w-48 bg-white/20 rounded-full h-3">
-                    <div 
+                    <div
                       className="bg-green-400 h-3 rounded-full transition-all duration-500"
                       style={{ width: `${((currentQuestion + 1) / totalQuestions) * 100}%` }}
                     ></div>

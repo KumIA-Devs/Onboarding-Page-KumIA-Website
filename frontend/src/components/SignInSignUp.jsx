@@ -1,19 +1,28 @@
 import React, { useState, useCallback, memo } from 'react';
 import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mail, Lock, User, ArrowRight, Eye, EyeOff, 
-  CheckCircle, Shield, Star, Heart, Zap
+import {
+  Mail, Lock, User, Eye, EyeOff
 } from 'lucide-react';
 import useFormValidation from '../hooks/useFormValidation';
-import { ANIMATIONS } from '../constants/animations';
-import Button from './ui/Button';
-import Input from './ui/Input';
+import { useAuth } from '../contexts/AuthContext';
 
-const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', language = 'es', onLogin }) => {
+const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es', onLogin }) => {
   const [mode, setMode] = useState(initialMode); // 'signin' or 'signup'
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Firebase Auth
+  const { signIn, signUp, signInWithGoogle, error, clearError } = useAuth();
+
+  // Clear validation errors when mode changes
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setValidationErrors({});
+    clearError();
+  };
+
   // Form validation hook with security
   const {
     values: formData,
@@ -32,28 +41,75 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
     mode === 'signup' ? ['email', 'password', 'name'] : ['email', 'password']
   );
 
-  // Handle form submission with security
-  const onFormSubmit = useCallback(async (data) => {
+  // Handle form submission with Firebase
+  const onFormSubmit = useCallback(async (e) => {
+    e.preventDefault();
+
+    if (isLoading) return;
+
     try {
-      // Here you would typically make an API call
-      console.log('Form submitted:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Call onLogin to proceed to onboarding
-      if (onLogin) {
-        onLogin();
+      // Reset validation errors
+      setValidationErrors({});
+      clearError();
+      setIsLoading(true);
+
+      // Get form data directly
+      const data = formData;
+
+      // Check for required fields
+      const newErrors = {};
+      if (!data.email?.trim()) {
+        newErrors.email = 'El email es requerido';
       }
-      
-      // Close modal on success
-      onClose();
-      reset();
+      if (!data.password?.trim()) {
+        newErrors.password = 'La contraseña es requerida';
+      }
+      if (mode === 'signup') {
+        if (!data.name?.trim()) {
+          newErrors.name = 'El nombre es requerido';
+        }
+        if (!data.confirmPassword?.trim()) {
+          newErrors.confirmPassword = 'Confirmar contraseña es requerido';
+        }
+        if (data.password !== data.confirmPassword) {
+          newErrors.confirmPassword = 'Las contraseñas no coinciden';
+        }
+      }
+
+      // If there are validation errors, show them and return
+      if (Object.keys(newErrors).length > 0) {
+        setValidationErrors(newErrors);
+        setIsLoading(false);
+        return;
+      }
+
+      let result;
+
+      // Firebase Authentication
+      if (mode === 'signup') {
+        result = await signUp(data.email, data.password, data.name);
+      } else {
+        result = await signIn(data.email, data.password);
+      }
+
+      if (result.success) {
+        console.log('Authentication successful:', result);
+
+        // Call onLogin to proceed to onboarding
+        if (onLogin) {
+          onLogin();
+        }
+
+        // Reset form
+        reset();
+      }
+
+      setIsLoading(false);
     } catch (error) {
       console.error('Authentication error:', error);
-      // Handle error (show toast, etc.)
+      setIsLoading(false);
     }
-  }, [onClose, reset, onLogin]);
+  }, [formData, reset, onLogin, mode, signIn, signUp, clearError, isLoading]);
 
   const content = {
     es: {
@@ -102,7 +158,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
         epicSubtitle: "KumIA creates the magical link between your customers and your restaurant",
         client: "Client",
         clientStatus: "Hungry",
-        restaurant: "Restaurant", 
+        restaurant: "Restaurant",
         restaurantStatus: "Successful",
         connectionText: "🌟 KumIA is the intelligent bridge",
         connectionSubtext: "That connects the perfect experience between your customers and your restaurant"
@@ -205,11 +261,30 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
     ]
   };
 
-  const handleGoogleAuth = () => {
-    // Implementar Google OAuth aquí
-    console.log('Google OAuth authentication');
-    window.open('https://docs.google.com/forms/d/e/1FAIpQLSdLAPkQv4xZrMixvLZB7rZg2Dxc-Q7XVizT46sWJbRLiEMqtw/viewform?usp=header', '_blank');
-  };
+  const handleGoogleAuth = useCallback(async () => {
+    if (isLoading) return;
+
+    try {
+      setIsLoading(true);
+      clearError();
+
+      const result = await signInWithGoogle();
+
+      if (result.success) {
+        console.log('Google authentication successful:', result);
+
+        // Call onLogin to proceed to onboarding
+        if (onLogin) {
+          onLogin();
+        }
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Google authentication error:', error);
+      setIsLoading(false);
+    }
+  }, [signInWithGoogle, onLogin, clearError, isLoading]);
 
   // Usar logo existente como placeholder
   const kumiaLogo = "https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png";
@@ -222,7 +297,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
       initial={{ scale: 0.9, y: 20 }}
       animate={{ scale: 1, y: 0 }}
       exit={{ scale: 0.9, y: 20 }}
-      className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full mx-4 max-w-5xl max-h-[90vh] overflow-y-auto"
+      className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full mx-4 max-w-5xl max-h-[90vh] overflow-y-auto hide-scrollbar"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex flex-col lg:flex-row min-h-[600px]">
@@ -241,10 +316,10 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
           <div className="relative z-10">
             {/* Centered KumIA Logo */}
             <div className="flex flex-col items-center text-center mb-8">
-              <img 
-                src={kumiaLogo} 
-                alt="KumIA" 
-                className="w-16 h-16 mb-3 object-contain" 
+              <img
+                src={kumiaLogo}
+                alt="KumIA"
+                className="w-16 h-16 mb-3 object-contain"
               />
               <div>
                 <h1 className="text-3xl font-black text-white">KumIA</h1>
@@ -261,7 +336,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                     </div>
                     <p className="text-white font-semibold text-xs lg:text-sm">Cliente</p>
                   </div>
-                  
+
                   {/* Connection Lines */}
                   <div className="flex-1 flex items-center justify-center mx-2 sm:mx-6">
                     <div className="relative flex items-center justify-center w-full">
@@ -271,14 +346,14 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                         animate={{ opacity: [0.5, 1, 0.5] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       />
-                      
+
                       {/* Replace Red Heart with KumIA Logo for SignIn */}
-                      <motion.div 
-                        animate={{ 
+                      <motion.div
+                        animate={{
                           scale: [1, 1.1, 1],
                           rotate: [0, 3, -3, 0]
                         }}
-                        transition={{ 
+                        transition={{
                           duration: 2,
                           repeat: Infinity,
                           repeatType: "reverse"
@@ -286,17 +361,17 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                         className="mx-2 sm:mx-3"
                       >
                         <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center drop-shadow-lg">
-                          <img 
-                            src={kumiaLogo} 
-                            alt="KumIA" 
-                            className="w-full h-full object-contain" 
+                          <img
+                            src={kumiaLogo}
+                            alt="KumIA"
+                            className="w-full h-full object-contain"
                             style={{
                               filter: 'drop-shadow(0 0 8px rgba(154, 205, 50, 1))'
                             }}
                           />
                         </div>
                       </motion.div>
-                      
+
                       {/* Right connection line */}
                       <motion.div
                         className="w-8 h-1 sm:w-12 sm:h-1 bg-gradient-to-l from-transparent to-[#9ACD32]"
@@ -305,7 +380,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                       />
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="w-12 h-12 lg:w-16 lg:h-16 bg-[#9ACD32]/20 rounded-full flex items-center justify-center mb-2">
                       <span className="text-2xl lg:text-3xl">🍽️</span>
@@ -342,12 +417,6 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
 
         {/* Right Side - Sign In Form */}
         <div className="lg:w-1/2 p-8 flex flex-col justify-center bg-white">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <ArrowRight className="w-6 h-6 rotate-45" />
-          </button>
 
           <div className="max-w-md mx-auto w-full">
             <div className="text-center mb-8">
@@ -360,15 +429,15 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
             </div>
 
             {/* Google Sign In */}
-            <button 
+            <button
               onClick={handleGoogleAuth}
               className="w-full flex items-center justify-center space-x-3 bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-[#9ACD32] transition-colors group"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               <span className="font-medium text-gray-700 group-hover:text-[#9ACD32]">
                 {content[language]?.signin.googleText}
@@ -384,45 +453,73 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="tu@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
+            <form onSubmit={onFormSubmit} className="space-y-4">
+              <div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                  />
+                </div>
+                {validationErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                )}
               </div>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Contraseña"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Contraseña"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {validationErrors.password && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>
+                )}
               </div>
+
+              {/* Firebase Error Messages */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
 
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#9ACD32] to-green-600 text-white font-bold py-4 rounded-xl hover:from-green-500 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                disabled={isLoading}
+                className={`w-full bg-gradient-to-r from-[#9ACD32] to-green-600 text-white font-bold py-4 rounded-xl hover:from-green-500 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                {content[language]?.signin.submitText}
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <span>Iniciando sesión...</span>
+                  </div>
+                ) : (
+                  content[language]?.signin.submitText
+                )}
               </motion.button>
             </form>
 
@@ -430,7 +527,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
               <p className="text-gray-600">
                 {content[language]?.signin.switchText}{' '}
                 <button
-                  onClick={() => setMode('signup')}
+                  onClick={() => switchMode('signup')}
                   className="text-[#9ACD32] font-semibold hover:underline"
                 >
                   {content[language]?.signin.switchAction}
@@ -449,7 +546,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
       initial={{ scale: 0.9, y: 20 }}
       animate={{ scale: 1, y: 0 }}
       exit={{ scale: 0.9, y: 20 }}
-      className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full mx-4 max-w-6xl max-h-[90vh] overflow-y-auto"
+      className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full mx-4 max-w-6xl max-h-[90vh] overflow-y-auto hide-scrollbar"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex flex-col lg:flex-row min-h-[700px]">
@@ -519,21 +616,21 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                     <p className="text-white font-bold text-base lg:text-lg">{content[language].signup.client}</p>
                     <p className="text-white/70 text-xs lg:text-sm">{content[language].signup.clientStatus}</p>
                   </motion.div>
-                  
+
                   {/* Epic Connection Flow */}
                   <div className="flex-1 flex items-center justify-center mx-4 sm:mx-8">
                     <div className="relative flex flex-col sm:flex-row items-center justify-center w-full space-y-4 sm:space-y-0">
                       {/* Top/Left flowing line */}
                       <motion.div
                         className="w-2 h-12 sm:w-20 sm:h-2 bg-gradient-to-b sm:bg-gradient-to-r from-blue-500 to-[#9ACD32] rounded-full"
-                        animate={{ 
+                        animate={{
                           opacity: [0.3, 1, 0.3],
                           scaleY: [0.8, 1.2, 0.8],
                           scaleX: [0.8, 1.2, 0.8]
                         }}
                         transition={{ duration: 2, repeat: Infinity }}
                       />
-                      
+
                       {/* KumIA Logo - Center */}
                       <motion.div
                         initial={{ scale: 0, rotate: -180 }}
@@ -542,23 +639,23 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                         className="mx-2 sm:mx-6 relative"
                       >
                         <motion.div
-                          animate={{ 
+                          animate={{
                             scale: [1, 1.1, 1],
                             filter: ['drop-shadow(0 0 10px rgba(154, 205, 50, 0.8))', 'drop-shadow(0 0 20px rgba(154, 205, 50, 1))', 'drop-shadow(0 0 10px rgba(154, 205, 50, 0.8))']
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
                           className="w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center"
                         >
-                          <img 
-                            src={kumiaLogo} 
-                            alt="KumIA" 
-                            className="w-12 h-12 lg:w-16 lg:h-16 object-contain" 
+                          <img
+                            src={kumiaLogo}
+                            alt="KumIA"
+                            className="w-12 h-12 lg:w-16 lg:h-16 object-contain"
                             style={{
                               filter: 'drop-shadow(0 0 12px rgba(154, 205, 50, 1))'
                             }}
                           />
                         </motion.div>
-                        
+
                         {/* Animated ring around logo */}
                         <motion.div
                           animate={{ rotate: 360 }}
@@ -566,11 +663,11 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                           className="absolute inset-0 border-2 border-[#9ACD32] rounded-full opacity-50"
                         />
                       </motion.div>
-                      
+
                       {/* Bottom/Right flowing line */}
                       <motion.div
                         className="w-2 h-12 sm:w-20 sm:h-2 bg-gradient-to-b sm:bg-gradient-to-r from-[#9ACD32] to-orange-500 rounded-full"
-                        animate={{ 
+                        animate={{
                           opacity: [0.3, 1, 0.3],
                           scaleY: [0.8, 1.2, 0.8],
                           scaleX: [0.8, 1.2, 0.8]
@@ -579,7 +676,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                       />
                     </div>
                   </div>
-                  
+
                   {/* Restaurant */}
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
@@ -594,7 +691,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
                     <p className="text-white/70 text-xs lg:text-sm">{content[language].signup.restaurantStatus}</p>
                   </motion.div>
                 </div>
-                
+
                 {/* Connection Description */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -636,12 +733,6 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
 
         {/* Right Side - Sign Up Form */}
         <div className="lg:w-2/5 p-8 flex flex-col justify-center bg-gradient-to-br from-white to-gray-50">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <ArrowRight className="w-6 h-6 rotate-45" />
-          </button>
 
           <div className="max-w-md mx-auto w-full">
             <div className="text-center mb-8">
@@ -654,15 +745,15 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
             </div>
 
             {/* Google Sign Up */}
-            <button 
+            <button
               onClick={handleGoogleAuth}
               className="w-full flex items-center justify-center space-x-3 bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-[#9ACD32] transition-colors group shadow-lg"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               <span className="font-medium text-gray-700 group-hover:text-[#9ACD32]">
                 {content[language]?.signup.googleText}
@@ -678,69 +769,117 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Nombre completo"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
+            <form onSubmit={onFormSubmit} className="space-y-4">
+              <div>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Nombre completo"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                  />
+                </div>
+                {validationErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+                )}
               </div>
 
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="tu@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
+              <div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                  />
+                </div>
+                {validationErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                )}
               </div>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Contraseña"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Contraseña"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {validationErrors.password && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>
+                )}
               </div>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirmar contraseña"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all"
-                />
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirmar contraseña"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-[#9ACD32] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-500 bg-white ${validationErrors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-200'
+                      }`}
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {validationErrors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>
+                )}
               </div>
+
+              {/* Firebase Error Messages */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
 
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#9ACD32] to-green-600 text-white font-bold py-4 rounded-xl hover:from-green-500 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl text-lg"
+                disabled={isLoading}
+                className={`w-full bg-gradient-to-r from-[#9ACD32] to-green-600 text-white font-bold py-4 rounded-xl hover:from-green-500 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl text-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                {content[language]?.signup.submitText}
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <span>Creando cuenta...</span>
+                  </div>
+                ) : (
+                  content[language]?.signup.submitText
+                )}
               </motion.button>
             </form>
 
@@ -748,7 +887,7 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
               <p className="text-gray-600">
                 {content[language]?.signup.switchText}{' '}
                 <button
-                  onClick={() => setMode('signin')}
+                  onClick={() => switchMode('signin')}
                   className="text-[#9ACD32] font-semibold hover:underline"
                 >
                   {content[language]?.signup.switchAction}
@@ -769,7 +908,6 @@ const SignInSignUp = memo(({ isVisible, onClose, initialMode = 'signin', languag
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-          onClick={onClose}
         >
           {mode === 'signin' ? renderSignInPage() : renderSignUpPage()}
         </motion.div>
@@ -782,7 +920,6 @@ SignInSignUp.displayName = 'SignInSignUp';
 
 SignInSignUp.propTypes = {
   isVisible: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
   initialMode: PropTypes.oneOf(['signin', 'signup']),
   language: PropTypes.oneOf(['es', 'en', 'pt']),
   onLogin: PropTypes.func,

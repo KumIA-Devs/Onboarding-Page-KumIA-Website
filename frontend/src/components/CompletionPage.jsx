@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { onboardingData } from '../data/mock';
 
-const CompletionPage = ({ currentLanguage = 'es' }) => {
+const CompletionPage = ({ currentLanguage = 'es', onComplete }) => {
   const translations = onboardingData.translations[currentLanguage];
+
+  // Auto redirect after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onComplete) {
+        onComplete();
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center p-8">
       <div className="max-w-2xl w-full text-center">
         {/* Logo */}
         <div className="mb-12">
-          <img 
+          <img
             src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png"
             alt="KumIA Logo"
             className="w-32 h-32 mx-auto mb-6 object-contain"
