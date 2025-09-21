@@ -205,7 +205,7 @@ const ComingSoonPage = () => {
           className="mt-12 pt-8 border-t border-white/10"
         >
           <p className="text-gray-500 text-sm">
-            © 2024 KumIA. El futuro de la gastronomía inteligente.
+            © 2025 KumIA. El futuro de la gastronomía inteligente.
           </p>
         </motion.div>
       </div>
