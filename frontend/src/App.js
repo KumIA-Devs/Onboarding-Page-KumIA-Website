@@ -7,6 +7,7 @@ import NewUserRoute from "./components/NewUserRoute";
 import LoginPage from "./components/LoginPage";
 import OnboardingPage from "./components/OnboardingPage";
 import ComingSoonPage from "./components/ComingSoonPage";
+import VerifyEmail from "./components/VerifyEmail";
 
 function App() {
   return (
@@ -31,11 +32,19 @@ function App() {
                 </NewUserRoute>
               }
             />
-            {/* Ruta específica para Coming Soon */}
+            <Route
+              path="/verify-email"
+              element={
+                <ProtectedRoute>
+                  <VerifyEmail />
+                </ProtectedRoute>
+              }
+            />
+            {/* Ruta específica para Coming Soon: requiere verificación */}
             <Route
               path="/coming-soon"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireVerified>
                   <ComingSoonPage />
                 </ProtectedRoute>
               }

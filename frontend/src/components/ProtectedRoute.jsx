@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
+const ProtectedRoute = ({ children, requireVerified = false }) => {
+  const { currentUser, loading, isEmailVerified } = useAuth();
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -20,6 +20,11 @@ const ProtectedRoute = ({ children }) => {
   // If not authenticated, redirect to login
   if (!currentUser) {
     return <Navigate to="/login" replace />;
+  }
+
+  // If email verification is required and not verified, redirect to verify email page
+  if (requireVerified && !isEmailVerified) {
+    return <Navigate to="/verify-email" replace />;
   }
 
   // If authenticated, render the protected component

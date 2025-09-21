@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AuthRedirect = ({ children }) => {
-  const { currentUser, loading, isNewUser } = useAuth();
+  const { currentUser, loading, isNewUser, isEmailVerified } = useAuth();
 
   // Show loading while checking authentication
   if (loading) {
@@ -24,16 +24,18 @@ const AuthRedirect = ({ children }) => {
     })();
     const effectiveNewUser = isNewUser || storageNewUser;
 
-    console.log('AuthRedirect - User:', currentUser.email, 'isNewUser:', isNewUser, 'storageNewUser:', storageNewUser);
-
     // If it's a new user, redirect to onboarding first
     if (effectiveNewUser) {
-      console.log('Redirecting to onboarding for new user');
       return <Navigate to="/onboarding" replace />;
     }
-    // If it's an existing user, redirect to coming soon page
-    console.log('Redirecting to coming-soon for existing user');
-    return <Navigate to="/coming-soon" replace />;
+
+    // If email is verified, redirect to main area
+    if (isEmailVerified) {
+      return <Navigate to="/coming-soon" replace />;
+    }
+
+    // If NOT verified, allow login page to be visible (so user can see instructions or switch accounts)
+    return children;
   }
 
   // If not authenticated, show login page

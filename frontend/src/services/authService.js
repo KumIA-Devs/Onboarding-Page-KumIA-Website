@@ -5,7 +5,9 @@ import {
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  sendEmailVerification,
+  reload,
 } from "firebase/auth";
 import { auth } from "../config/firebase";
 
@@ -33,10 +35,13 @@ export const authService = {
         });
       }
 
+      // Send verification email (non-blocking)
+      try { await sendEmailVerification(result.user); } catch (e) { console.warn('sendEmailVerification failed', e); }
+
       return {
         success: true,
         user: result.user,
-        message: 'Cuenta creada exitosamente'
+        message: 'Cuenta creada exitosamente, verifica tu correo para continuar'
       };
     } catch (error) {
       return {
@@ -133,7 +138,29 @@ export const authService = {
   // Listen to auth state changes
   onAuthStateChanged: (callback) => {
     return onAuthStateChanged(auth, callback);
-  }
+  },
+
+  // Resend verification email
+  sendVerification: async () => {
+    try {
+      if (!auth.currentUser) return { success: false, message: 'No hay usuario autenticado' };
+      await sendEmailVerification(auth.currentUser);
+      return { success: true, message: 'Correo de verificación enviado' };
+    } catch (error) {
+      return { success: false, error: error.code, message: 'No se pudo enviar el correo' };
+    }
+  },
+
+  // Refresh current user to update emailVerified flag
+  refreshCurrentUser: async () => {
+    try {
+      if (!auth.currentUser) return null;
+      await reload(auth.currentUser);
+      return auth.currentUser;
+    } catch {
+      return auth.currentUser ?? null;
+    }
+  },
 };
 
 // Helper function to get user-friendly error messages
