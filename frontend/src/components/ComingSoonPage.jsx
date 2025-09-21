@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, Rocket, Star, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const ComingSoonPage = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isNewUser } = useAuth();
   const navigate = useNavigate();
+
+  // If a brand-new user lands here by race condition, send to onboarding
+  useEffect(() => {
+    const storageNewUser = (() => {
+      try { return typeof window !== 'undefined' && sessionStorage.getItem('kumia_new_user') === '1'; } catch { return false; }
+    })();
+    if (isNewUser || storageNewUser) {
+      navigate('/onboarding', { replace: true, state: { newUser: true } });
+    }
+  }, [isNewUser, navigate]);
+
+  console.log('ComingSoonPage rendering - User:', currentUser?.email, 'isNewUser:', isNewUser);
 
   const handleLogout = async () => {
     try {

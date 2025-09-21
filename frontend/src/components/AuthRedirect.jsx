@@ -19,16 +19,21 @@ const AuthRedirect = ({ children }) => {
 
   // If user is authenticated and tries to access login
   if (currentUser) {
-    console.log('AuthRedirect - User:', currentUser.email, 'isNewUser:', isNewUser);
+    const storageNewUser = (() => {
+      try { return typeof window !== 'undefined' && sessionStorage.getItem('kumia_new_user') === '1'; } catch { return false; }
+    })();
+    const effectiveNewUser = isNewUser || storageNewUser;
+
+    console.log('AuthRedirect - User:', currentUser.email, 'isNewUser:', isNewUser, 'storageNewUser:', storageNewUser);
 
     // If it's a new user, redirect to onboarding first
-    if (isNewUser) {
+    if (effectiveNewUser) {
       console.log('Redirecting to onboarding for new user');
       return <Navigate to="/onboarding" replace />;
     }
-    // If it's an existing user, redirect to dashboard
-    console.log('Redirecting to dashboard for existing user');
-    return <Navigate to="/dashboard" replace />;
+    // If it's an existing user, redirect to coming soon page
+    console.log('Redirecting to coming-soon for existing user');
+    return <Navigate to="/coming-soon" replace />;
   }
 
   // If not authenticated, show login page

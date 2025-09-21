@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirect from "./components/AuthRedirect";
+import NewUserRoute from "./components/NewUserRoute";
 import LoginPage from "./components/LoginPage";
 import OnboardingPage from "./components/OnboardingPage";
 import ComingSoonPage from "./components/ComingSoonPage";
@@ -25,18 +26,24 @@ function App() {
             <Route
               path="/onboarding"
               element={
-                <ProtectedRoute>
+                <NewUserRoute>
                   <OnboardingPage />
-                </ProtectedRoute>
+                </NewUserRoute>
               }
             />
+            {/* Ruta específica para Coming Soon */}
             <Route
-              path="/dashboard"
+              path="/coming-soon"
               element={
                 <ProtectedRoute>
                   <ComingSoonPage />
                 </ProtectedRoute>
               }
+            />
+            {/* Dashboard futuro - por ahora redirige a coming-soon */}
+            <Route
+              path="/dashboard"
+              element={<Navigate to="/coming-soon" replace />}
             />
           </Routes>
         </BrowserRouter>

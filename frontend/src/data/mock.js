@@ -297,6 +297,7 @@ export const onboardingData = {
     {
       id: 'food_specialty',
       type: 'card-select',
+      multiple: true,
       text: {
         es: '¿En qué tipo de comida se especializa tu restaurante?',
         en: 'What type of food does your restaurant specialize in?',
@@ -462,34 +463,35 @@ export const onboardingData = {
     {
       id: 'review_platforms',
       type: 'card-select',
+      multiple: true,
       text: {
         es: '¿Qué plataforma utilizas para recolectar reviews de tus clientes?',
         en: 'What platform do you use to collect customer reviews?',
         pt: 'Que plataforma você usa para coletar avaliações dos clientes?'
       },
       options: [
-        { 
-          value: 'google', 
+        {
+          value: 'google',
           label: { es: 'Google Reviews', en: 'Google Reviews', pt: 'Google Reviews' },
           logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
         },
-        { 
-          value: 'tripadvisor', 
+        {
+          value: 'tripadvisor',
           label: { es: 'TripAdvisor', en: 'TripAdvisor', pt: 'TripAdvisor' },
           logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Tripadvisor_logo.svg'
         },
-        { 
-          value: 'trustpilot', 
+        {
+          value: 'trustpilot',
           label: { es: 'Trustpilot', en: 'Trustpilot', pt: 'Trustpilot' },
           logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Trustpilot_Logo.svg'
         },
-        { 
-          value: 'facebook', 
+        {
+          value: 'facebook',
           label: { es: 'Facebook', en: 'Facebook', pt: 'Facebook' },
           logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg'
         },
-        { 
-          value: 'other', 
+        {
+          value: 'other',
           label: { es: 'Otro', en: 'Other', pt: 'Outro' },
           showInput: true
         }
@@ -525,6 +527,7 @@ export const onboardingData = {
     {
       id: 'entertainment',
       type: 'card-select',
+      multiple: true,
       text: {
         es: 'Mientras tus clientes esperan su comida, ¿cómo mejoras su experiencia?',
         en: 'While your customers wait for their food, how do you improve their experience?',
@@ -578,6 +581,7 @@ export const onboardingData = {
     {
       id: 'business_goals',
       type: 'card-select',
+      multiple: true,
       text: {
         es: '¿Cuál es tu meta principal?',
         en: 'What is your main goal?',

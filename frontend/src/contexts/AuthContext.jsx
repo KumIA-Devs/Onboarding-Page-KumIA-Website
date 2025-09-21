@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }) => {
 
       if (result.success) {
         setIsNewUser(true); // Mark as new user when signing up
+        try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
+        console.log('Sign Up successful - isNewUser set to TRUE');
       } else {
         setError(result.message);
       }
@@ -50,6 +52,8 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         // Clear new user flag since this is a sign in (not sign up)
         setIsNewUser(false);
+        try { sessionStorage.removeItem('kumia_new_user'); } catch { }
+        console.log('Sign In successful - isNewUser set to FALSE');
       } else {
         setError(result.message);
       }
@@ -74,8 +78,12 @@ export const AuthProvider = ({ children }) => {
         // Set new user flag if this is a new Google user, otherwise clear it
         if (result.isNewUser) {
           setIsNewUser(true);
+          try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
+          console.log('Google Sign In - NEW USER - isNewUser set to TRUE');
         } else {
           setIsNewUser(false);
+          try { sessionStorage.removeItem('kumia_new_user'); } catch { }
+          console.log('Google Sign In - EXISTING USER - isNewUser set to FALSE');
         }
       } else {
         setError(result.message);
@@ -111,6 +119,8 @@ export const AuthProvider = ({ children }) => {
 
   const clearNewUserFlag = () => {
     setIsNewUser(false);
+    try { sessionStorage.removeItem('kumia_new_user'); } catch { }
+    console.log('clearNewUserFlag called - isNewUser set to FALSE');
   };
 
   // Listen for authentication state changes
@@ -122,6 +132,7 @@ export const AuthProvider = ({ children }) => {
       // If user logs out, reset the new user flag
       if (!user) {
         setIsNewUser(false);
+        try { sessionStorage.removeItem('kumia_new_user'); } catch { }
       }
     });
 

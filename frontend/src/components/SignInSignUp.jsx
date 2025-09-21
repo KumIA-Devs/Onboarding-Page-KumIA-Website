@@ -6,15 +6,18 @@ import {
 } from 'lucide-react';
 import useFormValidation from '../hooks/useFormValidation';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es', onLogin }) => {
+const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es' }) => {
   const [mode, setMode] = useState(initialMode); // 'signin' or 'signup'
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   // Firebase Auth
-  const { signIn, signUp, signInWithGoogle, error, clearError } = useAuth();
+  const { signIn, signUp, signInWithGoogle, error, clearError, isNewUser } = useAuth();
 
   // Clear validation errors when mode changes
   const switchMode = (newMode) => {
@@ -93,11 +96,13 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es',
       }
 
       if (result.success) {
-        console.log('Authentication successful:', result);
-
-        // Call onLogin to proceed to onboarding
-        if (onLogin) {
-          onLogin();
+        // Navigate based on new/existing user WITHOUT flicker
+        if (mode === 'signup' || isNewUser) {
+          try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
+          navigate('/onboarding', { replace: true, state: { newUser: true } });
+        } else {
+          try { sessionStorage.removeItem('kumia_new_user'); } catch { }
+          navigate('/coming-soon', { replace: true });
         }
 
         // Reset form
@@ -109,7 +114,7 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es',
       console.error('Authentication error:', error);
       setIsLoading(false);
     }
-  }, [formData, reset, onLogin, mode, signIn, signUp, clearError, isLoading]);
+  }, [formData, reset, mode, signIn, signUp, clearError, isLoading, isNewUser, navigate]);
 
   const content = {
     es: {
@@ -270,12 +275,14 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es',
 
       const result = await signInWithGoogle();
 
-      if (result.success) {
-        console.log('Google authentication successful:', result);
-
-        // Call onLogin to proceed to onboarding
-        if (onLogin) {
-          onLogin();
+      if (result?.success) {
+        // Redirect based on whether new google user or existing
+        if (result.isNewUser) {
+          try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
+          navigate('/onboarding', { replace: true, state: { newUser: true } });
+        } else {
+          try { sessionStorage.removeItem('kumia_new_user'); } catch { }
+          navigate('/coming-soon', { replace: true });
         }
       }
 
@@ -284,7 +291,7 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es',
       console.error('Google authentication error:', error);
       setIsLoading(false);
     }
-  }, [signInWithGoogle, onLogin, clearError, isLoading]);
+  }, [signInWithGoogle, clearError, isLoading, navigate]);
 
   // Usar logo existente como placeholder
   const kumiaLogo = "https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png";
@@ -921,8 +928,7 @@ SignInSignUp.displayName = 'SignInSignUp';
 SignInSignUp.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   initialMode: PropTypes.oneOf(['signin', 'signup']),
-  language: PropTypes.oneOf(['es', 'en', 'pt']),
-  onLogin: PropTypes.func,
+  language: PropTypes.oneOf(['es', 'en', 'pt'])
 };
 
 export default SignInSignUp;
