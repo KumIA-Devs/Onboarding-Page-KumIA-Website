@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirect from "./components/AuthRedirect";
 import NewUserRoute from "./components/NewUserRoute";
 import LoginPage from "./components/LoginPage";
+import RegisterPage from "./components/RegisterPage";
 import OnboardingPage from "./components/OnboardingPage";
 import ComingSoonPage from "./components/ComingSoonPage";
 import VerifyEmail from "./components/VerifyEmail";
@@ -21,6 +22,14 @@ function App() {
               element={
                 <AuthRedirect>
                   <LoginPage />
+                </AuthRedirect>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <AuthRedirect>
+                  <RegisterPage />
                 </AuthRedirect>
               }
             />

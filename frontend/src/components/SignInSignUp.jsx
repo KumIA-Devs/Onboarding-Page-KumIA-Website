@@ -534,7 +534,7 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es' 
               <p className="text-gray-600">
                 {content[language]?.signin.switchText}{' '}
                 <button
-                  onClick={() => switchMode('signup')}
+                  onClick={() => { /* navigate to register */ try { window.history.pushState({}, '', '/register'); } catch { } window.dispatchEvent(new PopStateEvent('popstate')); }}
                   className="text-[#9ACD32] font-semibold hover:underline"
                 >
                   {content[language]?.signin.switchAction}
@@ -894,7 +894,7 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es' 
               <p className="text-gray-600">
                 {content[language]?.signup.switchText}{' '}
                 <button
-                  onClick={() => switchMode('signin')}
+                  onClick={() => { /* navigate to login */ try { window.history.pushState({}, '', '/login'); } catch { } window.dispatchEvent(new PopStateEvent('popstate')); }}
                   className="text-[#9ACD32] font-semibold hover:underline"
                 >
                   {content[language]?.signup.switchAction}
