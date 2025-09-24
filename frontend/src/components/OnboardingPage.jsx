@@ -3,6 +3,8 @@ import { ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import app from '../config/firebase';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { Card } from './ui/card';
@@ -23,6 +25,10 @@ const OnboardingPage = () => {
   const { logout, currentUser, isNewUser, completeOnboarding } = useAuth();
   const hasNavigated = useRef(false); // Prevent multiple navigations
   const timeoutRef = useRef(null); // Store timeout ID
+
+  // Configure cloud function for completing onboarding
+  const functions = getFunctions(app, 'southamerica-east1');
+  const completeOnboardingCloudFunction = httpsCallable(functions, 'restaurants-endpoints-completeOnboarding');
 
   // Cleanup navigation timeout on unmount
   React.useEffect(() => {
@@ -309,11 +315,9 @@ const OnboardingPage = () => {
 
       console.log('Completing onboarding for user:', currentUser.uid);
 
-      // First update with onboarding answers
-      await authService.updateUserProfile(currentUser.uid, {
-        onboardingAnswers: answers,
-        onboardingCompletedAt: new Date().toISOString()
-      });
+      // Call cloud function to complete onboarding process
+      const cloudFunctionResult = await completeOnboardingCloudFunction(answers);
+      console.log('Cloud function result:', cloudFunctionResult.data);
 
       // Then use the context function to complete onboarding and update local state
       const result = await completeOnboarding();
