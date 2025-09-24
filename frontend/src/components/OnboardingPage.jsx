@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,7 @@ import ProgressSteps from './ProgressSteps';
 import CompletionPage from './CompletionPage';
 import { onboardingData } from '../data/mock';
 import { useSpecialtyImagesPreloader } from '../hooks/useImagePreloader';
+import { useSimpleOnboardingState } from '../hooks/useSimpleOnboardingState';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
@@ -45,11 +46,23 @@ const OnboardingPage = () => {
     }
   }, [isNewUser, currentUser, navigate]);
 
-  const [currentLanguage, setCurrentLanguage] = useState('es');
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [isCompleted, setIsCompleted] = useState(false);
   const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
+
+  // Estado del onboarding con persistencia silenciosa
+  const {
+    currentLanguage,
+    setCurrentLanguage,
+    currentQuestion,
+    answers,
+    isCompleted,
+    isRestored,
+    isLoadingProgress,
+    handleAnswer,
+    handleNext: handleNextQuestion,
+    handlePrevious: handlePreviousQuestion,
+    completeOnboarding: completeOnboardingState,
+    getProgressSummary
+  } = useSimpleOnboardingState('es');
 
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
@@ -61,29 +74,23 @@ const OnboardingPage = () => {
     questions
   );
 
+
   // Calculate current step based on question
   const questionsPerStep = Math.ceil(totalQuestions / 5);
   const calculatedStep = Math.floor(currentQuestion / questionsPerStep);
 
-  const handleAnswer = (questionId, value) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
-  };
-
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
-      setCurrentQuestion(prev => prev + 1);
+      handleNextQuestion();
     } else {
       // Complete onboarding
-      setIsCompleted(true);
+      completeOnboardingState();
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
+      handlePreviousQuestion();
     }
   };
 
@@ -314,6 +321,9 @@ const OnboardingPage = () => {
       if (result.success) {
         console.log('Onboarding completed successfully');
 
+        // Clear the onboarding progress (important!)
+        await completeOnboardingState();
+
         // Wait a moment for state to propagate, then navigate
         timeoutRef.current = setTimeout(() => {
           console.log('Navigating to coming-soon page...');
@@ -325,10 +335,30 @@ const OnboardingPage = () => {
 
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      // Navigate anyway to prevent user from being stuck
+      // Clear progress anyway and navigate to prevent user from being stuck
+      await completeOnboardingState();
       navigate('/coming-soon', { replace: true });
     }
   };
+
+  // Mostrar loading mientras se carga el progreso
+  if (isLoadingProgress) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <img
+            src="https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png"
+            alt="KumIA Logo"
+            className="w-24 h-24 mx-auto mb-8 object-contain animate-pulse"
+          />
+          <div className="text-white/80 text-lg">Cargando...</div>
+          <div className="mt-4 w-32 h-1 bg-white/20 rounded-full mx-auto">
+            <div className="h-1 bg-[#9ACD32] rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isCompleted) {
     return (
@@ -342,6 +372,7 @@ const OnboardingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 relative">
+
       {/* Logout Button */}
       <button
         onClick={() => logout().then(() => navigate('/login'))}
