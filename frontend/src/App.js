@@ -1,10 +1,9 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AuthRedirect from "./components/AuthRedirect";
-import NewUserRoute from "./components/NewUserRoute";
-import ExistingUserRoute from "./components/ExistingUserRoute";
+import { PublicRoute, ProtectedRoute, OnboardingRoute, DashboardRoute } from "./components/RouteGuard";
+
+// Pages
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import OnboardingPage from "./components/OnboardingPage";
@@ -17,31 +16,28 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Root redirect */}
             <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            {/* Public routes - redirect if authenticated */}
             <Route
               path="/login"
               element={
-                <AuthRedirect>
+                <PublicRoute>
                   <LoginPage />
-                </AuthRedirect>
+                </PublicRoute>
               }
             />
             <Route
               path="/register"
               element={
-                <AuthRedirect>
+                <PublicRoute>
                   <RegisterPage />
-                </AuthRedirect>
+                </PublicRoute>
               }
             />
-            <Route
-              path="/onboarding"
-              element={
-                <ProtectedRoute requireVerified>
-                  <OnboardingPage />
-                </ProtectedRoute>
-              }
-            />
+            
+            {/* Protected routes - require authentication */}
             <Route
               path="/verify-email"
               element={
@@ -50,16 +46,26 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Ruta específica para Coming Soon: solo para usuarios con onboarding completo */}
+            
+            {/* Onboarding - require auth + verified email */}
+            <Route
+              path="/onboarding"
+              element={
+                <OnboardingRoute>
+                  <OnboardingPage />
+                </OnboardingRoute>
+              }
+            />
+            
+            {/* Dashboard routes - require completed onboarding */}
             <Route
               path="/coming-soon"
               element={
-                <ExistingUserRoute>
+                <DashboardRoute>
                   <ComingSoonPage />
-                </ExistingUserRoute>
+                </DashboardRoute>
               }
             />
-            {/* Dashboard futuro - por ahora redirige a coming-soon */}
             <Route
               path="/dashboard"
               element={<Navigate to="/coming-soon" replace />}

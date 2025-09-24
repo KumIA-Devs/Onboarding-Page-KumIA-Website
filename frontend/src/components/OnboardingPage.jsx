@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,7 +9,6 @@ import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Slider } from './ui/slider';
 import TopBar from './TopBar';
 import ProgressSteps from './ProgressSteps';
@@ -18,41 +17,37 @@ import { onboardingData } from '../data/mock';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
-  const { logout, clearNewUserFlag, isNewUser, currentUser } = useAuth();
+  const { logout, currentUser, isNewUser, completeOnboarding } = useAuth();
+  const hasNavigated = useRef(false); // Prevent multiple navigations
+  const timeoutRef = useRef(null); // Store timeout ID
 
-  console.log('OnboardingPage rendering - isNewUser:', isNewUser);
+  // Cleanup navigation timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
-  // Check if user should be here (new user verification)
-  const storageNewUser = (() => {
-    try { return sessionStorage.getItem('kumia_new_user') === '1'; } catch { return false; }
-  })();
+  // Verify user should be here - but allow for state update delays
+  React.useEffect(() => {
+    if (!isNewUser && currentUser) {
+      // Small delay to avoid race conditions with state updates
+      const checkTimeout = setTimeout(() => {
+        console.log('OnboardingPage: User should not be here, redirecting to coming-soon');
+        navigate('/coming-soon', { replace: true });
+      }, 100);
 
-  console.log('OnboardingPage - User verification:', {
-    isNewUser,
-    storageNewUser,
-    shouldAllowAccess: isNewUser || storageNewUser
-  });
-
-  // If not a new user, redirect to coming-soon after a brief delay to avoid conflicts
-  if (!isNewUser && !storageNewUser) {
-    console.log('OnboardingPage - Not a new user, redirecting to coming-soon');
-    setTimeout(() => navigate('/coming-soon', { replace: true }), 100);
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#9ACD32] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-white text-lg">Verificando acceso...</p>
-        </div>
-      </div>
-    );
-  }
+      return () => clearTimeout(checkTimeout);
+    }
+  }, [isNewUser, currentUser, navigate]);
 
   const [currentLanguage, setCurrentLanguage] = useState('es');
-  const [currentStep, setCurrentStep] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isCompleted, setIsCompleted] = useState(false);
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
 
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
@@ -73,8 +68,7 @@ const OnboardingPage = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      // Last question - complete onboarding and redirect to coming soon
-      clearNewUserFlag(); // Clear the new user flag
+      // Complete onboarding
       setIsCompleted(true);
     }
   };
@@ -91,22 +85,15 @@ const OnboardingPage = () => {
     const currentQuestionId = currentQuestionObj.id;
     const answer = answers[currentQuestionId];
 
-    // If question is optional, always allow to continue
     if (currentQuestionObj.optional) return true;
-
     if (answer === undefined || answer === null) return false;
     if (typeof answer === 'string' && answer.trim() === '') return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
-
-    // For number questions, require value > 0
     if (currentQuestionObj.type === 'number' && (answer === 0 || answer === '')) return false;
-    if (currentQuestionObj.type === 'slider' && answer === currentQuestionObj.min) return true; // Slider always has a value
-
-    // For location type, check if all required fields are filled
+    if (currentQuestionObj.type === 'slider' && answer === currentQuestionObj.min) return true;
     if (currentQuestionObj.type === 'location') {
       return answer && answer.country && answer.city;
     }
-
     return true;
   };
 
@@ -180,7 +167,6 @@ const OnboardingPage = () => {
           </div>
         );
       case 'card-select':
-        // Determine if this question supports multiple selections
         const isMulti = question.multiple || ['food_specialty', 'review_platforms'].includes(questionId);
         const currentValue = answers[questionId];
         const isSelected = (val) => Array.isArray(currentValue) ? currentValue.includes(val) : currentValue === val;
@@ -218,14 +204,6 @@ const OnboardingPage = () => {
                 );
               })}
             </div>
-            {question.options?.find((o) => (!isMulti && o.value === currentValue) || (isMulti && Array.isArray(currentValue) && currentValue.includes(o.value)) && o.showInput) && (
-              <Input
-                value={answers[`${questionId}_other`] || ''}
-                onChange={(e) => handleAnswer(`${questionId}_other`, e.target.value)}
-                className="bg-white/10 border-white/30 text-white placeholder:text-white/60 h-12 text-lg"
-                placeholder={onboardingData.translations[currentLanguage].specify}
-              />
-            )}
           </div>
         );
       case 'location':
@@ -235,8 +213,8 @@ const OnboardingPage = () => {
           city: { es: 'Ciudad', en: 'City', pt: 'Cidade' }[currentLanguage],
           cityPlaceholder: { es: 'Ciudad', en: 'City', pt: 'Cidade' }[currentLanguage],
         };
-        const SOUTH_AMERICA2 = ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'GY', 'PE', 'PY', 'UY', 'VE'];
-        const countryOptions2 = (onboardingData.countries[currentLanguage] || []).filter((c) => SOUTH_AMERICA2.includes(c.value));
+        const SOUTH_AMERICA = ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'GY', 'PE', 'PY', 'UY', 'VE'];
+        const countryOptions = (onboardingData.countries[currentLanguage] || []).filter((c) => SOUTH_AMERICA.includes(c.value));
         return (
           <div className="space-y-6">
             <Label className="text-xl font-medium text-white">{questionText}</Label>
@@ -249,7 +227,7 @@ const OnboardingPage = () => {
                   className="w-full h-12 bg-white/10 border border-white/30 text-white text-lg rounded-md px-3"
                 >
                   <option value="" disabled>{labelsLoc.selectCountry}</option>
-                  {countryOptions2.map((c) => (
+                  {countryOptions.map((c) => (
                     <option key={c.value} value={c.value} className="bg-gray-900 text-white">{c.label}</option>
                   ))}
                 </select>
@@ -287,24 +265,59 @@ const OnboardingPage = () => {
     }
   };
 
-  // Handle completion and redirect to coming soon page
+  // Use the completeOnboarding function from AuthContext to properly sync state
   const handleOnboardingComplete = async () => {
+    // Prevent multiple executions
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+
+    setIsCompletingOnboarding(true);
+
     try {
-      if (currentUser) {
-        // Update onboardingComplete to true in Firestore
-        await authService.updateUserProfile(currentUser.uid, { onboardingComplete: true });
-        console.log('Onboarding marked as complete for user:', currentUser.uid);
+      if (!currentUser?.uid) {
+        console.error('No current user UID');
+        navigate('/coming-soon', { replace: true });
+        return;
       }
-      navigate('/coming-soon');
+
+      console.log('Completing onboarding for user:', currentUser.uid);
+
+      // First update with onboarding answers
+      await authService.updateUserProfile(currentUser.uid, {
+        onboardingAnswers: answers,
+        onboardingCompletedAt: new Date().toISOString()
+      });
+
+      // Then use the context function to complete onboarding and update local state
+      const result = await completeOnboarding();
+
+      if (result.success) {
+        console.log('Onboarding completed successfully');
+
+        // Wait a moment for state to propagate, then navigate
+        timeoutRef.current = setTimeout(() => {
+          console.log('Navigating to coming-soon page...');
+          navigate('/coming-soon', { replace: true });
+        }, 800);
+      } else {
+        throw new Error(result.error || 'Failed to complete onboarding');
+      }
+
     } catch (error) {
-      console.error('Error updating onboarding completion:', error);
-      // Still navigate even if the update fails
-      navigate('/coming-soon');
+      console.error('Error completing onboarding:', error);
+      // Navigate anyway to prevent user from being stuck
+      navigate('/coming-soon', { replace: true });
     }
   };
 
   if (isCompleted) {
-    return <CompletionPage currentLanguage={currentLanguage} onComplete={handleOnboardingComplete} />;
+    return (
+      <CompletionPage
+        currentLanguage={currentLanguage}
+        onComplete={handleOnboardingComplete}
+        isCompleting={isCompletingOnboarding}
+      />
+    );
   }
 
   return (

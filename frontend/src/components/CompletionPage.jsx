@@ -1,20 +1,43 @@
-import React, { useEffect } from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Check, Sparkles, Loader2 } from 'lucide-react';
 import { onboardingData } from '../data/mock';
 
-const CompletionPage = ({ currentLanguage = 'es', onComplete }) => {
+const CompletionPage = ({ currentLanguage = 'es', onComplete, isCompleting = false }) => {
   const translations = onboardingData.translations[currentLanguage];
+  const [countdown, setCountdown] = useState(2); // Shorter countdown to match our timeout
+  const [hasStartedCompletion, setHasStartedCompletion] = useState(false);
 
-  // Auto redirect after 3 seconds
+  // Countdown and auto redirect
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (isCompleting || hasStartedCompletion) return; // Don't start countdown if already completing
+
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          setHasStartedCompletion(true);
+          if (onComplete) {
+            onComplete();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onComplete, isCompleting, hasStartedCompletion]);
+
+  const handleManualComplete = () => {
+    if (!isCompleting && !hasStartedCompletion) {
+      setHasStartedCompletion(true);
       if (onComplete) {
         onComplete();
       }
-    }, 3000);
+    }
+  };
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+  const showLoading = isCompleting || hasStartedCompletion;
+  const showCountdown = !showLoading && countdown > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center p-8">
@@ -31,18 +54,28 @@ const CompletionPage = ({ currentLanguage = 'es', onComplete }) => {
         {/* Success Icon */}
         <div className="mb-8">
           <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-white" />
+            {showLoading ? (
+              <Loader2 className="w-10 h-10 text-white animate-spin" />
+            ) : (
+              <Check className="w-10 h-10 text-white" />
+            )}
           </div>
         </div>
 
         {/* Title */}
         <h1 className="text-4xl font-bold text-white mb-6">
-          {translations.completion.title}
+          {showLoading ?
+            (isCompleting ? 'Finalizando configuración...' : 'Accediendo al dashboard...') :
+            translations.completion.title
+          }
         </h1>
 
         {/* Message */}
         <p className="text-xl text-white/80 mb-8 leading-relaxed">
-          {translations.completion.message}
+          {showLoading ?
+            'Configurando tu experiencia personalizada...' :
+            translations.completion.message
+          }
         </p>
 
         {/* Loading Animation */}
@@ -56,10 +89,31 @@ const CompletionPage = ({ currentLanguage = 'es', onComplete }) => {
           <Sparkles className="w-6 h-6 text-green-400 animate-pulse" />
         </div>
 
-        {/* Processing Text */}
-        <p className="text-lg text-green-400 font-medium animate-pulse">
-          {translations.completion.processing}
-        </p>
+        {/* Processing Text with Countdown or Completion Status */}
+        <div className="mb-8">
+          <p className="text-lg text-green-400 font-medium animate-pulse">
+            {showLoading ?
+              (isCompleting ? 'Completando onboarding...' : 'Redirigiendo...') :
+              translations.completion.processing
+            }
+          </p>
+
+          {showCountdown && (
+            <p className="text-sm text-white/60 mt-2">
+              Redirección automática en {countdown} segundo{countdown !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+
+        {/* Manual Complete Button - only show if not loading */}
+        {!showLoading && (
+          <button
+            onClick={handleManualComplete}
+            className="bg-[#9ACD32] hover:bg-green-600 text-black font-bold px-8 py-3 rounded-xl text-lg transition-all duration-300 shadow-lg"
+          >
+            Continuar Ahora
+          </button>
+        )}
 
         {/* Background Decoration */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
