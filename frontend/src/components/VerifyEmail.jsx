@@ -90,15 +90,6 @@ const VerifyEmail = () => {
             <p className="text-sm text-white/90">{status}</p>
           </div>
         )}
-        
-        {/* Debug info - remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 p-3 bg-red-500/20 rounded-lg text-xs">
-            <p>Debug: emailVerified = {String(currentUser?.emailVerified)}</p>
-            <p>Debug: isEmailVerified = {String(isEmailVerified)}</p>
-            <p>Debug: isNewUser = {String(isNewUser)}</p>
-          </div>
-        )}
       </div>
     </div>
   );
