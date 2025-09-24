@@ -10,10 +10,12 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Slider } from './ui/slider';
+import OptimizedImage from './ui/OptimizedImage';
 import TopBar from './TopBar';
 import ProgressSteps from './ProgressSteps';
 import CompletionPage from './CompletionPage';
 import { onboardingData } from '../data/mock';
+import { useSpecialtyImagesPreloader } from '../hooks/useImagePreloader';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
@@ -52,6 +54,12 @@ const OnboardingPage = () => {
   const translations = onboardingData.translations[currentLanguage];
   const questions = onboardingData.questions;
   const totalQuestions = questions.length;
+
+  // Preload specialty images for faster loading (silent background process)
+  const { isImagePreloaded } = useSpecialtyImagesPreloader(
+    currentQuestion,
+    questions
+  );
 
   // Calculate current step based on question
   const questionsPerStep = Math.ceil(totalQuestions / 5);
@@ -194,10 +202,22 @@ const OnboardingPage = () => {
                     className={`text-left bg-white/10 border ${selected ? 'border-[#9ACD32] shadow-lg' : 'border-white/20'} rounded-xl p-4 hover:bg-white/20 transition`}
                   >
                     {opt.image && (
-                      <img src={opt.image} alt={opt.label[currentLanguage]} className="w-full h-24 object-cover rounded-lg mb-3" />
+                      <OptimizedImage
+                        src={opt.image}
+                        alt={opt.label[currentLanguage]}
+                        className="w-full h-24 object-cover rounded-lg mb-3"
+                        lazy={!isImagePreloaded(opt.image)}
+                        placeholder={true}
+                      />
                     )}
                     {opt.logo && (
-                      <img src={opt.logo} alt={opt.label[currentLanguage]} className="h-24 mb-3" />
+                      <OptimizedImage
+                        src={opt.logo}
+                        alt={opt.label[currentLanguage]}
+                        className="h-24 mb-3"
+                        lazy={false}
+                        placeholder={true}
+                      />
                     )}
                     <p className="text-white font-semibold">{opt.label[currentLanguage]}</p>
                   </button>

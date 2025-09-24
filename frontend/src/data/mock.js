@@ -307,92 +307,107 @@ export const onboardingData = {
         {
           value: 'sushi',
           label: { es: 'Sushi', en: 'Sushi', pt: 'Sushi' },
-          image: 'https://images.unsplash.com/photo-1663334038419-71e6f82e333f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxzdXNoaSUyMHBsYXR0ZXJ8ZW58MHx8fHwxNzU2NzU1NzExfDA&ixlib=rb-4.1.0&q=85'
+          image: '/sushi.webp'
         },
         {
           value: 'sandwiches',
           label: { es: 'Sándwiches', en: 'Sandwiches', pt: 'Sanduíches' },
-          image: 'https://images.unsplash.com/photo-1563045848-170d3bb67320?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwc2FuZHdpY2h8ZW58MHx8fHwxNzU2NzU1NzE4fDA&ixlib=rb-4.1.0&q=85'
+          image: '/sandwiches.webp'
         },
         {
           value: 'pizza',
           label: { es: 'Pizzas', en: 'Pizza', pt: 'Pizza' },
-          image: 'https://images.unsplash.com/photo-1676723009754-8359b42536ce?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxkZWxpY2lvdXMlMjBwaXp6YXxlbnwwfHx8fDE3NTY3NTU3MjR8MA&ixlib=rb-4.1.0&q=85'
+          image: '/pizzas.webp'
         },
         {
           value: 'desserts',
           label: { es: 'Postres', en: 'Desserts', pt: 'Sobremesas' },
-          image: 'https://images.unsplash.com/photo-1741244133042-970251e76066?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwzfHxlbGVnYW50JTIwZGVzc2VydHxlbnwwfHx8fDE3NTY3NTU3MzB8MA&ixlib=rb-4.1.0&q=85'
+          image: '/postres.webp'
         },
         {
           value: 'fusion',
           label: { es: 'Fusión', en: 'Fusion', pt: 'Fusão' },
-          image: 'https://images.unsplash.com/photo-1661607723272-56ed21064a48?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxmdXNpb24lMjBjdWlzaW5lfGVufDB8fHx8MTc1Njc1NTczNnww&ixlib=rb-4.1.0&q=85'
+          image: '/fusion.webp'
         },
         {
           value: 'homemade',
           label: { es: 'Casera', en: 'Homemade', pt: 'Caseira' },
-          image: 'https://images.unsplash.com/photo-1605926637412-b0cd5a3e3543?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwzfHxjb21mb3J0JTIwZm9vZHxlbnwwfHx8fDE3NTY3NTU3NDJ8MA&ixlib=rb-4.1.0&q=85'
+          image: '/homemade.webp'
         },
         {
           value: 'seafood',
           label: { es: 'Pescado y Mariscos', en: 'Seafood', pt: 'Frutos do mar' },
-          image: 'https://images.unsplash.com/photo-1633321094192-388268512e0f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMHNlYWZvb2R8ZW58MHx8fHwxNzU2NzU1NzQ3fDA&ixlib=rb-4.1.0&q=85'
+          image: '/seafood.webp'
         },
         {
           value: 'meat',
           label: { es: 'Carnes', en: 'Meat', pt: 'Carnes' },
-          image: 'https://images.unsplash.com/photo-1677758778998-c5427bc0d33e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwc3RlYWt8ZW58MHx8fHwxNzU2NzU1NzU0fDA&ixlib=rb-4.1.0&q=85'
+          image: '/carnes.webp'
         },
         {
           value: 'mexican',
           label: { es: 'Mexicana', en: 'Mexican', pt: 'Mexicana' },
-          image: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400&h=400&fit=crop'
+          image: '/mexicano.webp'
         },
         {
           value: 'peruvian',
           label: { es: 'Peruana', en: 'Peruvian', pt: 'Peruana' },
-          image: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=400&h=400&fit=crop'
+          image: '/peruano.webp'
         },
         {
           value: 'smoked',
           label: { es: 'Ahumada', en: 'Smoked', pt: 'Defumada' },
-          image: 'https://images.unsplash.com/photo-1599458253959-5d2d95a60397?w=400&h=400&fit=crop'
+          image: '/smoked.webp'
         },
         {
           value: 'glutenfree',
           label: { es: 'Sin Gluten', en: 'Gluten Free', pt: 'Sem Glúten' },
-          image: 'https://images.unsplash.com/photo-1540914124281-342587941389?w=400&h=400&fit=crop'
+          image: '/glutenfree.webp'
         },
         {
           value: 'nikkei',
           label: { es: 'Fusión Nikkei', en: 'Nikkei Fusion', pt: 'Fusão Nikkei' },
-          image: 'https://images.unsplash.com/photo-1734988149239-85943a98833c?w=400&h=400&fit=crop'
+          image: '/nikkei.webp'
         },
         {
           value: 'hamburgers',
           label: { es: 'Hamburguesas', en: 'Hamburgers', pt: 'Hambúrgueres' },
-          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop'
+          image: '/hamburgers.webp'
         },
         {
           value: 'fastfood',
           label: { es: 'Fast Food', en: 'Fast Food', pt: 'Fast Food' },
-          image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?w=400&h=400&fit=crop'
+          image: '/fastfood.webp'
         },
         {
           value: 'pastry',
           label: { es: 'Repostería', en: 'Pastry', pt: 'Confeitaria' },
-          image: 'https://images.unsplash.com/photo-1695217682346-c03f0a540806?w=400&h=400&fit=crop'
+          image: '/pastry.webp'
         },
         {
           value: 'korean',
           label: { es: 'Koreana', en: 'Korean', pt: 'Coreana' },
-          image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=400&fit=crop'
+          image: '/korean.webp'
         },
         {
           value: 'grilled',
           label: { es: 'Parrillas', en: 'Grilled', pt: 'Grelhados' },
-          image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=400&fit=crop'
+          image: '/grilled.webp'
+        },
+        {
+          value: 'arabic',
+          label: { es: 'Comida Árabe', en: 'Arabic Food', pt: 'Comida Árabe' },
+          image: '/arabic.webp'
+        },
+        {
+          value: 'asian',
+          label: { es: 'Comida Asiática', en: 'Asian Food', pt: 'Comida Asiática' },
+          image: '/asianfood.webp'
+        },
+        {
+          value: 'american',
+          label: { es: 'Comida Americana', en: 'American Food', pt: 'Comida Americana' },
+          image: '/americanfood.webp'
         }
       ]
     },
