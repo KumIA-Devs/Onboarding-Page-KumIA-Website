@@ -473,22 +473,22 @@ export const onboardingData = {
         {
           value: 'google',
           label: { es: 'Google Reviews', en: 'Google Reviews', pt: 'Google Reviews' },
-          logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
+          logo: '/google_reviews.webp'
         },
         {
           value: 'tripadvisor',
           label: { es: 'TripAdvisor', en: 'TripAdvisor', pt: 'TripAdvisor' },
-          logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Tripadvisor_logo.svg'
+          logo: '/tripadvisor.webp'
         },
         {
           value: 'trustpilot',
           label: { es: 'Trustpilot', en: 'Trustpilot', pt: 'Trustpilot' },
-          logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Trustpilot_Logo.svg'
+          logo: '/trustpilot.webp'
         },
         {
           value: 'facebook',
           label: { es: 'Facebook', en: 'Facebook', pt: 'Facebook' },
-          logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg'
+          logo: '/facebook-reviews-logo.webp'
         },
         {
           value: 'other',

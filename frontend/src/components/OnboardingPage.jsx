@@ -197,7 +197,7 @@ const OnboardingPage = () => {
                       <img src={opt.image} alt={opt.label[currentLanguage]} className="w-full h-24 object-cover rounded-lg mb-3" />
                     )}
                     {opt.logo && (
-                      <img src={opt.logo} alt={opt.label[currentLanguage]} className="h-6 mb-3" />
+                      <img src={opt.logo} alt={opt.label[currentLanguage]} className="h-24 mb-3" />
                     )}
                     <p className="text-white font-semibold">{opt.label[currentLanguage]}</p>
                   </button>
