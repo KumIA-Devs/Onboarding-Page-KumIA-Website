@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { Card } from './ui/card';
@@ -17,9 +18,34 @@ import { onboardingData } from '../data/mock';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
-  const { logout, clearNewUserFlag, isNewUser } = useAuth();
+  const { logout, clearNewUserFlag, isNewUser, currentUser } = useAuth();
 
   console.log('OnboardingPage rendering - isNewUser:', isNewUser);
+
+  // Check if user should be here (new user verification)
+  const storageNewUser = (() => {
+    try { return sessionStorage.getItem('kumia_new_user') === '1'; } catch { return false; }
+  })();
+
+  console.log('OnboardingPage - User verification:', {
+    isNewUser,
+    storageNewUser,
+    shouldAllowAccess: isNewUser || storageNewUser
+  });
+
+  // If not a new user, redirect to coming-soon after a brief delay to avoid conflicts
+  if (!isNewUser && !storageNewUser) {
+    console.log('OnboardingPage - Not a new user, redirecting to coming-soon');
+    setTimeout(() => navigate('/coming-soon', { replace: true }), 100);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#9ACD32] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-white text-lg">Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
 
   const [currentLanguage, setCurrentLanguage] = useState('es');
   const [currentStep, setCurrentStep] = useState(0);
@@ -262,8 +288,19 @@ const OnboardingPage = () => {
   };
 
   // Handle completion and redirect to coming soon page
-  const handleOnboardingComplete = () => {
-    navigate('/coming-soon');
+  const handleOnboardingComplete = async () => {
+    try {
+      if (currentUser) {
+        // Update onboardingComplete to true in Firestore
+        await authService.updateUserProfile(currentUser.uid, { onboardingComplete: true });
+        console.log('Onboarding marked as complete for user:', currentUser.uid);
+      }
+      navigate('/coming-soon');
+    } catch (error) {
+      console.error('Error updating onboarding completion:', error);
+      // Still navigate even if the update fails
+      navigate('/coming-soon');
+    }
   };
 
   if (isCompleted) {

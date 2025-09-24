@@ -46,75 +46,54 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es' 
 
   // Handle form submission with Firebase
   const onFormSubmit = useCallback(async (e) => {
-    e.preventDefault();
+    e.preventDefault();
+    if (isLoading) return;
 
-    if (isLoading) return;
+    try {
+      setValidationErrors({});
+      clearError();
+      setIsLoading(true);
 
-    try {
-      // Reset validation errors
-      setValidationErrors({});
-      clearError();
-      setIsLoading(true);
+      const data = formData;
+      const newErrors = {};
+      if (!data.email?.trim()) newErrors.email = 'El email es requerido';
+      if (!data.password?.trim()) newErrors.password = 'La contraseña es requerida';
+      if (mode === 'signup') {
+        if (!data.name?.trim()) newErrors.name = 'El nombre es requerido';
+        if (data.password !== data.confirmPassword) {
+          newErrors.confirmPassword = 'Las contraseñas no coinciden';
+        }
+      }
 
-      // Get form data directly
-      const data = formData;
+      if (Object.keys(newErrors).length > 0) {
+        setValidationErrors(newErrors);
+        setIsLoading(false);
+        return;
+      }
 
-      // Check for required fields
-      const newErrors = {};
-      if (!data.email?.trim()) {
-        newErrors.email = 'El email es requerido';
-      }
-      if (!data.password?.trim()) {
-        newErrors.password = 'La contraseña es requerida';
-      }
-      if (mode === 'signup') {
-        if (!data.name?.trim()) {
-          newErrors.name = 'El nombre es requerido';
-        }
-        if (!data.confirmPassword?.trim()) {
-          newErrors.confirmPassword = 'Confirmar contraseña es requerido';
-        }
-        if (data.password !== data.confirmPassword) {
-          newErrors.confirmPassword = 'Las contraseñas no coinciden';
-        }
-      }
+      let result;
+      if (mode === 'signup') {
+        result = await signUp(data.email, data.password, data.name);
+      } else {
+        result = await signIn(data.email, data.password);
+      }
 
-      // If there are validation errors, show them and return
-      if (Object.keys(newErrors).length > 0) {
-        setValidationErrors(newErrors);
-        setIsLoading(false);
-        return;
-      }
-
-      let result;
-
-      // Firebase Authentication
-      if (mode === 'signup') {
-        result = await signUp(data.email, data.password, data.name);
-      } else {
-        result = await signIn(data.email, data.password);
-      }
-
-      if (result.success) {
-        // Navigate based on new/existing user WITHOUT flicker
-        if (mode === 'signup' || isNewUser) {
-          try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
-          navigate('/onboarding', { replace: true, state: { newUser: true } });
-        } else {
-          try { sessionStorage.removeItem('kumia_new_user'); } catch { }
-          navigate('/coming-soon', { replace: true });
-        }
-
-        // Reset form
-        reset();
-      }
-
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Authentication error:', error);
-      setIsLoading(false);
-    }
-  }, [formData, reset, mode, signIn, signUp, clearError, isLoading, isNewUser, navigate]);
+      if (result.success) {
+        // Lógica de navegación unificada y correcta
+        if (result.onboardingComplete === false || mode === 'signup') {
+          navigate('/onboarding', { replace: true });
+        } else {
+          navigate('/coming-soon', { replace: true });
+        }
+        reset();
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setIsLoading(false);
+    }
+  }, [formData, reset, mode, signIn, signUp, clearError, isLoading, navigate]);
 
   const content = {
     es: {
@@ -267,31 +246,31 @@ const SignInSignUp = memo(({ isVisible, initialMode = 'signin', language = 'es' 
   };
 
   const handleGoogleAuth = useCallback(async () => {
-    if (isLoading) return;
+    if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      clearError();
+    try {
+      setIsLoading(true);
+      clearError();
 
-      const result = await signInWithGoogle();
+      // La función del contexto ahora devuelve { success, onboardingComplete, ... }
+      const result = await signInWithGoogle();
 
-      if (result?.success) {
-        // Redirect based on whether new google user or existing
-        if (result.isNewUser) {
-          try { sessionStorage.setItem('kumia_new_user', '1'); } catch { }
-          navigate('/onboarding', { replace: true, state: { newUser: true } });
-        } else {
-          try { sessionStorage.removeItem('kumia_new_user'); } catch { }
-          navigate('/coming-soon', { replace: true });
-        }
-      }
-
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Google authentication error:', error);
-      setIsLoading(false);
-    }
-  }, [signInWithGoogle, clearError, isLoading, navigate]);
+      if (result?.success) {
+        // Lógica de navegación unificada, idéntica a la del formulario manual
+        if (result.onboardingComplete === false) {
+          navigate('/onboarding', { replace: true });
+        } else {
+          navigate('/coming-soon', { replace: true });
+        }
+      } else {
+        // Si la autenticación falla, detenemos el spinner
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Google authentication error:', error);
+      setIsLoading(false);
+    }
+  }, [signInWithGoogle, clearError, isLoading, navigate]);
 
   // Usar logo existente como placeholder
   const kumiaLogo = "https://customer-assets.emergentagent.com/job_01c2df2f-712f-43dc-b607-91e2afc70fe8/artifacts/wbisp6gb_Logo_Oficial_Solo_Verde-NoBackground.png";

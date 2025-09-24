@@ -4,6 +4,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirect from "./components/AuthRedirect";
 import NewUserRoute from "./components/NewUserRoute";
+import ExistingUserRoute from "./components/ExistingUserRoute";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import OnboardingPage from "./components/OnboardingPage";
@@ -36,9 +37,9 @@ function App() {
             <Route
               path="/onboarding"
               element={
-                <NewUserRoute>
+                <ProtectedRoute requireVerified>
                   <OnboardingPage />
-                </NewUserRoute>
+                </ProtectedRoute>
               }
             />
             <Route
@@ -49,13 +50,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Ruta específica para Coming Soon: requiere verificación */}
+            {/* Ruta específica para Coming Soon: solo para usuarios con onboarding completo */}
             <Route
               path="/coming-soon"
               element={
-                <ProtectedRoute requireVerified>
+                <ExistingUserRoute>
                   <ComingSoonPage />
-                </ProtectedRoute>
+                </ExistingUserRoute>
               }
             />
             {/* Dashboard futuro - por ahora redirige a coming-soon */}
