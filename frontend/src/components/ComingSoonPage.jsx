@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, Rocket, Star, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,20 +7,42 @@ import { useNavigate } from 'react-router-dom';
 const ComingSoonPage = () => {
   const { currentUser, logout, isNewUser } = useAuth();
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // Estado de loading
 
   // This redirection is now handled directly in SignInSignUp based on onboardingComplete
   // No need for useEffect guard here anymore
 
   console.log('ComingSoonPage rendering - User:', currentUser?.email, 'isNewUser:', isNewUser);
 
-  const handleLogout = async () => {
+  // Función mejorada de logout para móviles
+  const handleLogout = async (e) => {
+    // Prevenir comportamientos por defecto
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (isLoggingOut) return; // Prevenir múltiples clicks
+
+    setIsLoggingOut(true);
+    console.log('🚪 Iniciando logout...');
+
     try {
       const result = await logout();
+      console.log('🚪 Logout result:', result);
+
       if (result.success) {
+        console.log('✅ Logout exitoso, navegando a login...');
         navigate('/login');
+      } else {
+        console.error('❌ Logout falló:', result.message);
+        alert('Error al cerrar sesión: ' + (result.message || 'Error desconocido'));
       }
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error('❌ Error en handleLogout:', error);
+      alert('Error inesperado al cerrar sesión');
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -52,17 +74,54 @@ const ComingSoonPage = () => {
         />
       </div>
 
-      {/* Logout Button */}
-      <motion.button
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+      {/* Logout Button - Optimizado para móviles */}
+      <button
         onClick={handleLogout}
-        className="absolute top-6 right-6 flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl transition-colors duration-300 shadow-lg z-10"
+        disabled={isLoggingOut}
+        className={`
+          absolute top-4 right-4 
+          flex items-center justify-center space-x-2 
+          ${isLoggingOut ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700 active:bg-red-800'} 
+          text-white font-medium
+          px-3 py-2 sm:px-4 sm:py-2
+          rounded-xl 
+          transition-all duration-200 
+          shadow-lg hover:shadow-xl
+          z-50
+          min-h-[48px] min-w-[48px]
+          touch-manipulation
+          ${isLoggingOut ? 'cursor-not-allowed' : 'cursor-pointer'}
+          select-none
+        `}
+        style={{
+          WebkitTapHighlightColor: 'transparent', // Quitar highlight azul en iOS
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          KhtmlUserSelect: 'none',
+          MozUserSelect: 'none',
+          MsUserSelect: 'none',
+          userSelect: 'none'
+        }}
+        // Eventos adicionales para mejor soporte móvil
+        onTouchStart={(e) => {
+          console.log('👆 Touch start detectado');
+        }}
+        onTouchEnd={(e) => {
+          console.log('👆 Touch end detectado');
+          if (!isLoggingOut) {
+            handleLogout(e);
+          }
+        }}
       >
-        <LogOut className="w-4 h-4" />
-        <span className="hidden sm:inline">Cerrar Sesión</span>
-      </motion.button>
+        {isLoggingOut ? (
+          <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+        ) : (
+          <LogOut className="w-4 h-4" />
+        )}
+        <span className="hidden sm:inline">
+          {isLoggingOut ? 'Cerrando...' : 'Cerrar Sesión'}
+        </span>
+      </button>
 
       {/* Main Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
